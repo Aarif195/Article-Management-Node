@@ -1,12 +1,26 @@
 {
-  "name": "taskone",
+  "name": "article-management-node",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "nodejs",
+    "rest api",
+    "http module",
+    "crud operations",
+    "json file storage",
+    "article management",
+    "filtering",
+    "search",
+    "likes system",
+    "comments system",
+    "backend project",
+    "no framework",
+    "learn nodejs"
+  ],
+  "author": "AbdulAzeez Adebayo",
   "license": "ISC",
-  "description": ""
+  "description": "A simple blog API built with Node.js core modules (without Express or any database). Supports CRUD operations, filtering, likes, and comments using JSON file storage."
 }

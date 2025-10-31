@@ -1,6 +1,7 @@
 const http = require('http');
 const fs = require("fs");
-const PORT = 8000;
+const PORT = process.env.PORT || 8000;
+
 
 // file path
 const file = "articles.json";
@@ -11,7 +12,7 @@ if (!fs.existsSync(file)) {
 
 const server = http.createServer((req, res) => {
 
-    if (req.url === "/articles" && req.method === "GET") {
+    if (req.url === "/api/articles" && req.method === "GET") {
         fs.readFile(file, "utf8", (err, data) => {
             if (err) {
                 res.writeHead(500, { "Content-Type": "application/json" });
@@ -25,7 +26,7 @@ const server = http.createServer((req, res) => {
     }
 
     // POST
-    else if (req.url === "/articles" && req.method === "POST") {
+    else if (req.url === "/api/articles" && req.method === "POST") {
         let body = "";
 
         req.on("data", chunk => {
