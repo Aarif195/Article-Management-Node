@@ -46,47 +46,9 @@
     ]
   },
   {
-    "title": "Understanding REST APIs",
-    "content": "This article explores what REST APIs are and why they are popular.",
-    "author": "John Doe",
-    "date": "2025-10-25",
-    "tags": [
-      "api",
-      "rest",
-      "http"
-    ],
-    "category": "Web Development",
-    "status": "draft",
-    "id": 4,
-    "likes": 0,
-    "comments": [
-      {
-        "user": "Bayo",
-        "text": "Nice explanation, I learned a lot!",
-        "date": "2025-10-31T10:43:15.298Z"
-      }
-    ]
-  },
-  {
-    "title": "CSS Grid vs Flexbox",
-    "content": "Both CSS Grid and Flexbox are essential tools for modern web layouts.",
-    "author": "Jane Smith",
-    "date": "2025-09-14",
-    "tags": [
-      "css",
-      "frontend",
-      "layout"
-    ],
-    "category": "Frontend",
-    "status": "archived",
-    "id": 5,
-    "likes": 2,
-    "comments": []
-  },
-  {
     "title": "AI Trends in 2025",
     "content": "Artificial Intelligence continues to shape industries across the world.",
-    "author": "Aisha Bello",
+    "author": "Feranmi David",
     "date": "2025-10-15",
     "tags": [
       "ai",
@@ -113,7 +75,13 @@
     "status": "draft",
     "id": 7,
     "likes": 2,
-    "comments": []
+    "comments": [
+      {
+        "user": "Bayo",
+        "text": "Nice explanation, I learned a lot!",
+        "date": "2025-11-01T09:08:50.304Z"
+      }
+    ]
   },
   {
     "title": "Mastering Node.js Core Modules",
@@ -144,6 +112,28 @@
     "category": "Programming",
     "status": "published",
     "id": 9,
+    "likes": 0,
+    "comments": [
+      {
+        "user": "Olaide",
+        "text": "This article really helped me understand Node.js",
+        "date": "2025-11-01T09:10:16.221Z"
+      }
+    ]
+  },
+  {
+    "title": "Understanding APIs",
+    "content": "This article explores what REST APIs are and why they are popular.",
+    "author": "Samuel Moses",
+    "date": "2025-10-25",
+    "tags": [
+      "api",
+      "rest",
+      "http"
+    ],
+    "category": "Web Development",
+    "status": "draft",
+    "id": 10,
     "likes": 0,
     "comments": []
   }

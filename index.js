@@ -2,7 +2,6 @@ const http = require('http');
 const fs = require("fs");
 const PORT = process.env.PORT || 8000;
 
-
 // file path
 const file = "articles.json";
 
@@ -12,6 +11,7 @@ if (!fs.existsSync(file)) {
 
 const server = http.createServer((req, res) => {
 
+    // First GET
     if (req.url === "/api/articles" && req.method === "GET") {
         fs.readFile(file, "utf8", (err, data) => {
             if (err) {
@@ -21,7 +21,7 @@ const server = http.createServer((req, res) => {
 
             const articles = JSON.parse(data);
             res.writeHead(200, { "Content-Type": "application/json" });
-            res.end(JSON.stringify(articles));
+            return res.end(JSON.stringify(articles));
         });
     }
 
@@ -127,54 +127,47 @@ const server = http.createServer((req, res) => {
 
         fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 
-        res.writeHead(200, { "Content-Type": "application/json" });
+        res.writeHead(204, { "Content-Type": "application/json" });
         res.end(JSON.stringify({ message: "Article deleted", deleted }));
     }
 
     // filtering
-    else if (req.url.startsWith("/api/articles") && req.method === "GET") {
+    else if (req.url.startsWith("/api/articles") && req.method === "GET" && req.url !== "/api/articles") {
         const url = new URL(req.url, `http://${req.headers.host}`);
-        // console.log(
-        //     url
-        // );
+        const filters = Object.fromEntries(url.searchParams.entries());
 
-        const category = url.searchParams.get("category");
-        const tag = url.searchParams.get("tags");
-        const status = url.searchParams.get("status");
-        const search = url.searchParams.get("search");
+        fs.readFile(file, "utf8", (err, data) => {
+            if (err) {
+                res.writeHead(500, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Error reading file" }));
+            }
 
-        const data = fs.readFileSync(file, "utf8");
-        let articles = JSON.parse(data);
+            let articles = JSON.parse(data);
 
-        if (category) {
-            articles = articles.filter(
-                (a) => a.category.toLowerCase() === category.toLowerCase()
-            );
-        }
-        if (tag) {
-            articles = articles.filter(
-                (a) => a.tags && a.tags.map((t) => t.toLowerCase()).includes(tag.toLowerCase())
-            );
-        }
-        if (status) {
-            articles = articles.filter(
-                (a) => a.status.toLowerCase() === status.toLowerCase()
-            );
-        }
+            // Apply filters dynamically
+            for (const key in filters) {
+                const value = filters[key].toLowerCase();
 
-        if (search) {
-            const keyword = search.toLowerCase();
-            articles = articles.filter((a) =>
-                a.title.toLowerCase().includes(keyword) ||
-                a.content.toLowerCase().includes(keyword) ||
-                (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(keyword)))
-            );
-        }
+                // search should check title, content, and tags
+                if (key === "search") {
+                    articles = articles.filter(a =>
+                        a.title.toLowerCase().includes(value) ||
+                        a.content.toLowerCase().includes(value) ||
+                        (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
+                    );
+                }
+                // otherwise, match by property (e.g., category, status, author, etc.)
+                else {
+                    articles = articles.filter(a =>
+                        a[key] && a[key].toString().toLowerCase().includes(value)
+                    );
+                }
+            }
 
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(articles, null, 2));
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(articles));
+        });
     }
-
 
     // like
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/like") && req.method === "POST") {
@@ -251,30 +244,28 @@ const server = http.createServer((req, res) => {
     }
 
 
-//  Unlike an article
-else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/unlike") && req.method === "POST") {
-    const id = parseInt(req.url.split("/")[3]);
+    //  Unlike an article
+    else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/unlike") && req.method === "POST") {
+        const id = parseInt(req.url.split("/")[3]);
 
-    const data = JSON.parse(fs.readFileSync(file, "utf8"));
-    const article = data.find(a => a.id === id);
+        const data = JSON.parse(fs.readFileSync(file, "utf8"));
+        const article = data.find(a => a.id === id);
 
-    if (!article) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "Article not found" }));
-        return;
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Article not found" }));
+            return;
+        }
+
+        if (article.likes > 0) {
+            article.likes -= 1;
+        }
+
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Article unliked successfully", likes: article.likes }));
     }
-
-    if (article.likes > 0) {
-        article.likes -= 1;
-    }
-
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Article unliked successfully", likes: article.likes }));
-}
-
-
 
 })
 
