@@ -58,7 +58,7 @@
     "category": "Technology",
     "status": "published",
     "id": 6,
-    "likes": 0,
+    "likes": 2,
     "comments": []
   },
   {
@@ -74,7 +74,7 @@
     "category": "Backend",
     "status": "draft",
     "id": 7,
-    "likes": 2,
+    "likes": 3,
     "comments": [
       {
         "user": "Bayo",
@@ -124,7 +124,7 @@
   {
     "title": "Understanding APIs",
     "content": "This article explores what REST APIs are and why they are popular.",
-    "author": "Samuel Moses",
+    "author": "Feranmi David",
     "date": "2025-10-25",
     "tags": [
       "api",
@@ -134,6 +134,22 @@
     "category": "Web Development",
     "status": "draft",
     "id": 10,
+    "likes": 0,
+    "comments": []
+  },
+  {
+    "title": "Mastering Node.js Core Modules",
+    "content": "Node.js core modules provide powerful built-in capabilities for developers.",
+    "author": "AbdulAzeez",
+    "date": "2025-10-27",
+    "tags": [
+      "node",
+      "backend",
+      "javascript"
+    ],
+    "category": "Programming",
+    "status": "published",
+    "id": 11,
     "likes": 0,
     "comments": []
   }
