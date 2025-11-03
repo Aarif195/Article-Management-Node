@@ -10,5 +10,12 @@
     "username": "omoluabi",
     "email": "omo@example.com",
     "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f"
+  },
+  {
+    "id": 3,
+    "username": "Adebimpe",
+    "email": "ade@example.com",
+    "password": "54b688a517f7654563a6c64d945a3670880a4c602ec67a065bbebbcd2b22edd5",
+    "token": "df10355605d541968ef8d24539616de0418936098a8b129f"
   }
 ]

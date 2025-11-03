@@ -32,5 +32,22 @@
     "comments": [],
     "createdAt": "2025-11-03T12:00:13.492Z",
     "updatedAt": "2025-11-03T12:00:13.495Z"
+  },
+  {
+    "id": 15,
+    "title": "Mastering Node.js Core",
+    "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
+    "author": "Adeoye",
+    "category": "Programming",
+    "status": "published",
+    "tags": [
+      "node",
+      "backend"
+    ],
+    "image": "https://example.com/image.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-03T16:01:46.364Z",
+    "updatedAt": "2025-11-03T16:01:46.365Z"
   }
 ]

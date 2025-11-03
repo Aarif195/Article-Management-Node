@@ -1,5 +1,5 @@
-
 const fs = require("fs");
+
 
 // file path
 const file = "articles.json";
@@ -7,6 +7,7 @@ if (!fs.existsSync(file)) {
     fs.writeFileSync(file, "[]");
 }
 
+// GET
 function getArticles(req, res) {
     fs.readFile(file, "utf8", (err, data) => {
         if (err) {
@@ -22,69 +23,76 @@ function getArticles(req, res) {
 
 // POST
 function createArticle(req, res) {
-  let body = "";
-
-  req.on("data", chunk => {
-    body += chunk.toString();
-  });
-
-  req.on("end", () => {
-    try {
-      const { title, content, author, category, status, tags, image } = JSON.parse(body);
-
-      // Allowed categories, tags, and status
-      const allowedCategories = ["Programming", "Technology", "Design"];
-      const allowedStatuses = ["draft", "published"];
-      const allowedTags = ["api", "node", "frontend", "backend"];
-
-if (!title?.trim() || !content?.trim() || !author?.trim()) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Title, content, and author are required." }));
-      }
-
-      if (category && !allowedCategories.includes(category)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Invalid category provided." }));
-      }
-
-      if (status && !allowedStatuses.includes(status)) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Invalid status provided." }));
-      }
-
-      if (tags && !tags.every(tag => allowedTags.includes(tag))) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Invalid tag(s) provided." }));
-      }
-
-      const data = fs.readFileSync(file, "utf8");
-      const articles = JSON.parse(data);
-
-      const newArticle = {
-        id: articles.length ? articles[articles.length - 1].id + 1 : 1,
-        title,
-        content,
-        author,
-        category: category || "Uncategorized",
-        status: status || "draft",
-        tags: tags || [],
-        image: image || null,
-        likes: 0,
-        comments: [],
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
-
-      articles.push(newArticle);
-      fs.writeFileSync(file, JSON.stringify(articles, null, 2));
-
-      res.writeHead(201, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
-    } catch (err) {
-      res.writeHead(400, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Invalid JSON format." }));
+    // Authenticate user first
+    const user = require('./authController').authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
-  });
+
+    let body = "";
+
+    req.on("data", chunk => {
+        body += chunk.toString();
+    });
+
+    req.on("end", () => {
+        try {
+            const { title, content, author, category, status, tags, image } = JSON.parse(body);
+
+            // Allowed categories, tags, and status
+            const allowedCategories = ["Programming", "Technology", "Design"];
+            const allowedStatuses = ["draft", "published"];
+            const allowedTags = ["api", "node", "frontend", "backend"];
+
+            if (!title?.trim() || !content?.trim() || !author?.trim()) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Title, content, and author are required." }));
+            }
+
+            if (category && !allowedCategories.includes(category)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Invalid category provided." }));
+            }
+
+            if (status && !allowedStatuses.includes(status)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Invalid status provided." }));
+            }
+
+            if (tags && !tags.every(tag => allowedTags.includes(tag))) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Invalid tag(s) provided." }));
+            }
+
+            const data = fs.readFileSync(file, "utf8");
+            const articles = JSON.parse(data);
+
+            const newArticle = {
+                id: articles.length ? articles[articles.length - 1].id + 1 : 1,
+                title,
+                content,
+                author, // we can later auto-assign user.username here if needed
+                category: category || "Uncategorized",
+                status: status || "draft",
+                tags: tags || [],
+                image: image || null,
+                likes: 0,
+                comments: [],
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
+            };
+
+            articles.push(newArticle);
+            fs.writeFileSync(file, JSON.stringify(articles, null, 2));
+
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
+        } catch (err) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Invalid JSON format." }));
+        }
+    });
 }
 
 
@@ -108,7 +116,7 @@ function getArticleById(req, res) {
 }
 
 // update
-function updateArticle(req, res) {    
+function updateArticle(req, res) {
     const id = parseInt(req.url.split("/")[3]);
     let body = "";
 

@@ -22,7 +22,6 @@ else if (req.url === "/api/login" && req.method === "POST") {
 
 // app.delete("/api/auth/:id", deleteUser);
 
-
     // GET
     if (req.url === "/api/articles" && req.method === "GET") {
         return getArticles(req, res);
