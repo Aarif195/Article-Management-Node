@@ -1,156 +1,36 @@
 [
   {
-    "id": 1,
-    "title": "Updated Node.js Article",
-    "content": "Node.js is a powerful backend runtime...",
-    "author": "Akanmu",
-    "date": "2025-10-27",
-    "tags": [
-      "node",
-      "frontend"
-    ],
-    "category": "Programming",
-    "status": "archived",
-    "likes": 0,
-    "comments": []
-  },
-  {
-    "title": "Building APIs with Node",
-    "content": "This article teaches how to build an API with Node.js.",
-    "author": "Lola",
-    "date": "2025-10-27",
-    "tags": [
-      "api",
-      "node"
-    ],
-    "category": "Backend",
-    "status": "published",
-    "id": 2,
-    "likes": 2,
-    "comments": [
-      {
-        "user": "AbdulAzeez",
-        "text": "This article really helped me understand Node.js!",
-        "date": "2025-10-31T10:25:36.366Z"
-      },
-      {
-        "user": "AbdulAzeez",
-        "text": "This article really helped me understand Node.js!",
-        "date": "2025-10-31T10:26:19.480Z"
-      },
-      {
-        "user": "AbdulAzeez",
-        "text": "This article really helped me understand Node.js!",
-        "date": "2025-10-31T10:26:33.758Z"
-      }
-    ]
-  },
-  {
-    "title": "AI Trends in 2025",
-    "content": "Artificial Intelligence continues to shape industries across the world.",
-    "author": "Feranmi David",
-    "date": "2025-10-15",
-    "tags": [
-      "ai",
-      "tech",
-      "future"
-    ],
-    "category": "Technology",
-    "status": "published",
-    "id": 6,
-    "likes": 2,
-    "comments": []
-  },
-  {
-    "title": "Securing Node.js Applications",
-    "content": "Learn about techniques to protect your Node.js app from common vulnerabilities.",
-    "author": "Michael Lee",
-    "date": "2025-10-10",
-    "tags": [
-      "security",
-      "backend",
-      "node"
-    ],
-    "category": "Backend",
-    "status": "draft",
-    "id": 7,
-    "likes": 3,
-    "comments": [
-      {
-        "user": "Bayo",
-        "text": "Nice explanation, I learned a lot!",
-        "date": "2025-11-01T09:08:50.304Z"
-      }
-    ]
-  },
-  {
-    "title": "Mastering Node.js Core Modules",
-    "content": "Node.js core modules provide powerful built-in capabilities for developers.",
-    "author": "AbdulAzeez",
-    "date": "2025-10-27",
-    "tags": [
-      "node",
-      "backend",
-      "javascript"
-    ],
+    "id": 13,
+    "title": "Mastering Node.js Core",
+    "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
+    "author": "Adebayo Abdulazeez",
     "category": "Programming",
     "status": "published",
-    "id": 8,
-    "likes": 0,
-    "comments": []
-  },
-  {
-    "title": "Mastering Node.js Core Modules",
-    "content": "Node.js core modules provide powerful built-in capabilities for developers.",
-    "author": "AbdulAzeez",
-    "date": "2025-10-27",
     "tags": [
       "node",
-      "backend",
-      "javascript"
+      "backend"
     ],
+    "image": "https://example.com/image.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-03T11:30:36.781Z",
+    "updatedAt": "2025-11-03T11:30:36.783Z"
+  },
+  {
+    "id": 14,
+    "title": "Mastering Node.js Core",
+    "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
+    "author": "Adebayo Abdulazeez",
     "category": "Programming",
     "status": "published",
-    "id": 9,
-    "likes": 0,
-    "comments": [
-      {
-        "user": "Olaide",
-        "text": "This article really helped me understand Node.js",
-        "date": "2025-11-01T09:10:16.221Z"
-      }
-    ]
-  },
-  {
-    "title": "Understanding APIs",
-    "content": "This article explores what REST APIs are and why they are popular.",
-    "author": "Feranmi David",
-    "date": "2025-10-25",
-    "tags": [
-      "api",
-      "rest",
-      "http"
-    ],
-    "category": "Web Development",
-    "status": "draft",
-    "id": 10,
-    "likes": 0,
-    "comments": []
-  },
-  {
-    "title": "Mastering Node.js Core Modules",
-    "content": "Node.js core modules provide powerful built-in capabilities for developers.",
-    "author": "AbdulAzeez",
-    "date": "2025-10-27",
     "tags": [
       "node",
-      "backend",
-      "javascript"
+      "backend"
     ],
-    "category": "Programming",
-    "status": "published",
-    "id": 11,
+    "image": "https://example.com/image.jpg",
     "likes": 0,
-    "comments": []
+    "comments": [],
+    "createdAt": "2025-11-03T12:00:13.492Z",
+    "updatedAt": "2025-11-03T12:00:13.495Z"
   }
 ]

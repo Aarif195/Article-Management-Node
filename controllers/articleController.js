@@ -22,33 +22,71 @@ function getArticles(req, res) {
 
 // POST
 function createArticle(req, res) {
-    let body = "";
+  let body = "";
 
-    req.on("data", chunk => {
-        body += chunk.toString();
-    });
+  req.on("data", chunk => {
+    body += chunk.toString();
+  });
 
-    req.on("end", () => {
-        try {
-            const newArticle = JSON.parse(body);
-            const data = fs.readFileSync(file, "utf8");
-            const articles = JSON.parse(data);
+  req.on("end", () => {
+    try {
+      const { title, content, author, category, status, tags, image } = JSON.parse(body);
 
-            newArticle.id = articles.length ? articles[articles.length - 1].id + 1 : 1;
-            newArticle.likes = 0;
-            newArticle.comments = newArticle.comments || [];
+      // Allowed categories, tags, and status
+      const allowedCategories = ["Programming", "Technology", "Design"];
+      const allowedStatuses = ["draft", "published"];
+      const allowedTags = ["api", "node", "frontend", "backend"];
 
-            articles.push(newArticle);
-            fs.writeFileSync(file, JSON.stringify(articles, null, 2));
+if (!title?.trim() || !content?.trim() || !author?.trim()) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Title, content, and author are required." }));
+      }
 
-            res.writeHead(201, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
-        } catch (err) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ error: "Invalid JSON or request format" }));
-        }
-    });
+      if (category && !allowedCategories.includes(category)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Invalid category provided." }));
+      }
+
+      if (status && !allowedStatuses.includes(status)) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Invalid status provided." }));
+      }
+
+      if (tags && !tags.every(tag => allowedTags.includes(tag))) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Invalid tag(s) provided." }));
+      }
+
+      const data = fs.readFileSync(file, "utf8");
+      const articles = JSON.parse(data);
+
+      const newArticle = {
+        id: articles.length ? articles[articles.length - 1].id + 1 : 1,
+        title,
+        content,
+        author,
+        category: category || "Uncategorized",
+        status: status || "draft",
+        tags: tags || [],
+        image: image || null,
+        likes: 0,
+        comments: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+
+      articles.push(newArticle);
+      fs.writeFileSync(file, JSON.stringify(articles, null, 2));
+
+      res.writeHead(201, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
+    } catch (err) {
+      res.writeHead(400, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({ error: "Invalid JSON format." }));
+    }
+  });
 }
+
 
 // GET article by ID
 function getArticleById(req, res) {
@@ -70,7 +108,7 @@ function getArticleById(req, res) {
 }
 
 // update
-function updateArticle(req, res) {
+function updateArticle(req, res) {    
     const id = parseInt(req.url.split("/")[3]);
     let body = "";
 
