@@ -38,14 +38,14 @@ function createArticle(req, res) {
 
     req.on("end", () => {
         try {
-            const { title, content, author, category, status, tags, image } = JSON.parse(body);
+            const { title, content, category, status, tags, image } = JSON.parse(body);
 
             // Allowed categories, tags, and status
             const allowedCategories = ["Programming", "Technology", "Design"];
             const allowedStatuses = ["draft", "published"];
             const allowedTags = ["api", "node", "frontend", "backend"];
 
-            if (!title?.trim() || !content?.trim() || !author?.trim()) {
+            if (!title?.trim() || !content?.trim()) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: "Title, content, and author are required." }));
             }
@@ -72,7 +72,7 @@ function createArticle(req, res) {
                 id: articles.length ? articles[articles.length - 1].id + 1 : 1,
                 title,
                 content,
-                author, // we can later auto-assign user.username here if needed
+                author: user.username, 
                 category: category || "Uncategorized",
                 status: status || "draft",
                 tags: tags || [],
@@ -117,6 +117,13 @@ function getArticleById(req, res) {
 
 // update
 function updateArticle(req, res) {
+    // Authenticate user first
+    const user = require('./authController').authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const id = parseInt(req.url.split("/")[3]);
     let body = "";
 
@@ -134,11 +141,20 @@ function updateArticle(req, res) {
 
         if (index === -1) {
             res.writeHead(404, { "Content-Type": "application/json" });
-            res.end(JSON.stringify({ message: "Article not found" }));
-            return;
+            return res.end(JSON.stringify({ message: "Article not found" }));
         }
 
-        const updatedArticle = { ...articles[index], ...updatedData };
+        // Check if the authenticated user is the author
+        if (articles[index].author !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Forbidden: You can only update your own articles" }));
+        }
+
+        const updatedArticle = { 
+            ...articles[index], 
+            ...updatedData, 
+            updatedAt: new Date().toISOString() // update timestamp
+        };
         articles[index] = updatedArticle;
 
         fs.writeFileSync(file, JSON.stringify(articles, null, 2));
@@ -147,6 +163,7 @@ function updateArticle(req, res) {
         res.end(JSON.stringify(updatedArticle));
     });
 }
+
 
 // delete
 function deleteArticle(req, res) {
@@ -292,6 +309,7 @@ function unlikeArticle(req, res) {
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "Article unliked successfully", likes: article.likes }));
 }
+
 
 
 module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle };

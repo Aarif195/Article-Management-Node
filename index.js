@@ -10,17 +10,17 @@ const { register, login } = require("./controllers/authController");
 const server = http.createServer((req, res) => {
 
     // Register
-if (req.url === "/api/register" && req.method === "POST") {
-  return register(req, res);
-}
+    if (req.url === "/api/register" && req.method === "POST") {
+        return register(req, res);
+    }
 
-// Login
-else if (req.url === "/api/login" && req.method === "POST") {
-  return login(req, res);
-}
+    // Login
+    else if (req.url === "/api/login" && req.method === "POST") {
+        return login(req, res);
+    }
 
 
-// app.delete("/api/auth/:id", deleteUser);
+    // app.delete("/api/auth/:id", deleteUser);
 
     // GET
     if (req.url === "/api/articles" && req.method === "GET") {
@@ -37,14 +37,14 @@ else if (req.url === "/api/login" && req.method === "POST") {
     // GET article by ID
     if (req.url.startsWith("/api/articles/") && req.method === "GET") {
         console.log("Get by id called");
-        
+
         return getArticleById(req, res);
 
     }
 
     // update
     else if (req.url.startsWith("/api/articles/") && req.method === "PUT") {
-         console.log("Update by id called");
+        console.log("Update by id called");
         return updateArticle(req, res);
     }
 
@@ -58,6 +58,8 @@ else if (req.url === "/api/login" && req.method === "POST") {
         return filterArticles(req, res);
 
     }
+
+
 
     // like
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/like") && req.method === "POST") {
@@ -81,7 +83,16 @@ else if (req.url === "/api/login" && req.method === "POST") {
         return unlikeArticle(req, res)
     }
 
+
+    // Delete user
+    else if (req.url.startsWith("/api/users/") && req.method === "DELETE") {
+        return require('./controllers/authController').deleteUser(req, res);
+    }
+
+
 })
+
+
 
 
 server.listen(PORT, () => {

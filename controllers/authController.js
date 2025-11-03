@@ -108,29 +108,40 @@ function login(req, res) {
     });
 }
 
+// 999876
+
+// DELETE USER
+function deleteUser(req, res) {
+    // Authenticate user first
+    const user = authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
+    // Get user ID from URL
+    const id = parseInt(req.url.split("/")[3]);
+
+    const users = readUsers();
+    const index = users.findIndex(u => u.id === id);
+
+    if (index === -1) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "User not found" }));
+    }
+
+    // Only allow user to delete their own account
+    if (users[index].id !== user.id) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own account" }));
+    }
+
+    const deletedUser = users.splice(index, 1);
+    writeUsers(users);
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message: "User deleted successfully", deletedUser }));
+}
 
 
-// Delete user by ID
-//  const deleteUser = (req, res) => {
-//   const { id } = req.params;
-
-//   try {
-//     const users = JSON.parse(fs.readFileSync(file, "utf8"));
-
-//     const userIndex = users.findIndex((u) => u.id == id);
-//     if (userIndex === -1) {
-//       return res.status(404).json({ message: "User not found" });
-//     }
-
-//     users.splice(userIndex, 1);
-
-//     fs.writeFileSync(file, JSON.stringify(users, null, 2));
-
-//     res.status(200).json({ message: `User with ID ${id} deleted successfully.` });
-//   } catch (error) {
-//     res.status(500).json({ message: "Error deleting user", error: error.message });
-//   }
-// };
-
-
-module.exports = { register, login, authenticate };
+module.exports = { register, login, deleteUser, authenticate };

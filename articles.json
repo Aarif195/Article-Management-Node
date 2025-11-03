@@ -49,5 +49,39 @@
     "comments": [],
     "createdAt": "2025-11-03T16:01:46.364Z",
     "updatedAt": "2025-11-03T16:01:46.365Z"
+  },
+  {
+    "id": 16,
+    "title": "Value Node.js Core",
+    "content": "An in-depth look at Node.js modules",
+    "author": "Adeyinke",
+    "category": "Programming",
+    "status": "published",
+    "tags": [
+      "node",
+      "backend"
+    ],
+    "image": "https://example.com/image.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-03T16:22:01.438Z",
+    "updatedAt": "2025-11-03T16:22:01.439Z"
+  },
+  {
+    "id": 17,
+    "title": "Article for practice",
+    "content": "starter file",
+    "author": "Wolly",
+    "category": "Design",
+    "status": "published",
+    "tags": [
+      "node",
+      "frontend"
+    ],
+    "image": "https://example.com/image.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-03T16:34:01.337Z",
+    "updatedAt": "2025-11-03T16:34:01.338Z"
   }
 ]
