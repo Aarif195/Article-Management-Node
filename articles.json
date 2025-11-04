@@ -45,10 +45,19 @@
       "frontend"
     ],
     "image": "https://example.com/image.jpg",
-    "likes": 0,
-    "comments": [],
+    "likes": 1,
+    "comments": [
+      {
+        "id": 1762265998437,
+        "user": "Olu",
+        "text": "This article really helped me understand Node.js",
+        "date": "2025-11-04T14:19:58.437Z",
+        "replies": []
+      }
+    ],
     "createdAt": "2025-11-03T16:34:01.337Z",
-    "updatedAt": "2025-11-03T16:34:01.338Z"
+    "updatedAt": "2025-11-03T16:34:01.338Z",
+    "liked": true
   },
   {
     "id": 19,
@@ -63,28 +72,19 @@
     ],
     "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
     "likes": 1,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762266915773,
+        "user": "Adeola",
+        "text": "This article really helped me understand Node.js",
+        "date": "2025-11-04T14:35:15.773Z",
+        "replies": [],
+        "liked": true
+      }
+    ],
     "createdAt": "2025-11-04T08:16:40.465Z",
     "updatedAt": "2025-11-04T08:16:40.465Z",
     "liked": true
-  },
-  {
-    "id": 20,
-    "title": "Deep Dive into Frontend",
-    "content": "Understanding readable, writable, and transform streams in Node.js.",
-    "author": "TestUser123",
-    "category": "Design",
-    "status": "draft",
-    "tags": [
-      "frontend",
-      "backend"
-    ],
-    "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
-    "likes": 7,
-    "comments": [],
-    "createdAt": "2025-11-04T08:49:55.932Z",
-    "updatedAt": "2025-11-04T08:49:55.933Z",
-    "liked": false
   },
   {
     "id": 21,
@@ -167,7 +167,22 @@
     ],
     "image": "https://unsplash.com/800x600/?Deep",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762270489474,
+        "user": "Adeola",
+        "text": "This article really helped me understand Node.js",
+        "date": "2025-11-04T15:34:49.474Z",
+        "replies": [
+          {
+            "id": 1762270505266,
+            "user": "Olaoluwa",
+            "text": "I agree, it clarified a lot for me too.",
+            "date": "2025-11-04T15:35:05.266Z"
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-04T09:27:57.742Z",
     "updatedAt": "2025-11-04T09:27:57.742Z"
   },

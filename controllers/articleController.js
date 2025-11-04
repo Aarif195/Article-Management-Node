@@ -22,7 +22,7 @@ function getArticles(req, res) {
 
 // Allowed categories, tags, and status
 const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
-const allowedStatuses = ["draft", "published"];
+const allowedStatuses = ["draft", "published", "achieve"];
 const allowedTags = ["api", "node", "frontend", "backend"];
 
 // POST
@@ -238,6 +238,31 @@ function filterArticles(req, res) {
         for (const key in filters) {
             const value = filters[key].toLowerCase();
 
+            const hasMatch = articles.some(a => {
+                if (key === "search") {
+                    return (
+                        a.title.toLowerCase().includes(value) ||
+                        a.content.toLowerCase().includes(value) ||
+                        (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
+                    );
+                } else if (key === "tags" && Array.isArray(a.tags)) {
+                    return a.tags.map(tag => tag.toLowerCase()).includes(value);
+                } else {
+                    return a[key]?.toString().toLowerCase() === value;
+                }
+            });
+
+            if (!hasMatch) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                const errorMessages = {
+                    category: `No articles found for this category: ${value}`,
+                    status: `No articles found for this status: ${value}`,
+                    tags: `No articles found for this tag: ${value}`,
+                    search: `No articles match the search term: ${value}`
+                };
+                return res.end(JSON.stringify({ error: errorMessages[key] || "No matching articles found." }));
+            }
+
             //  Validate filter keys
             if (!["search", "category", "status", "tags"].includes(key)) {
                 res.writeHead(400, { "Content-Type": "application/json" });
@@ -259,6 +284,7 @@ function filterArticles(req, res) {
                 return res.end(JSON.stringify({ error: `Invalid tag: ${value}` }));
             }
 
+
             if (key === "search") {
                 articles = articles.filter(a =>
                     a.title.toLowerCase().includes(value) ||
@@ -277,7 +303,7 @@ function filterArticles(req, res) {
     });
 }
 
-// Like
+// Like Article
 function likeArticle(req, res) {
     const id = parseInt(req.url.split("/")[3]);
     const data = fs.readFileSync(file, "utf8");
@@ -291,13 +317,13 @@ function likeArticle(req, res) {
 
     // articles[index].likes += 1;
 
-   if (typeof articles[index].liked === "undefined") {
+    if (typeof articles[index].liked === "undefined") {
         articles[index].liked = false;
     }
 
     // Toggle like
     if (articles[index].liked) {
-        articles[index].likes = Math.max(articles[index].likes - 1, 0); 
+        articles[index].likes = Math.max(articles[index].likes - 1, 0);
         articles[index].liked = false;
         message = "Article unliked!";
     } else {
@@ -333,9 +359,11 @@ function postComment(req, res) {
         }
 
         const comment = {
+            id: Date.now(),
             user,
             text,
-            date: new Date().toISOString()
+            date: new Date().toISOString(),
+            replies: []
         };
 
         article.comments.push(comment);
@@ -361,6 +389,95 @@ function getComments(req, res) {
     res.end(JSON.stringify(article.comments));
 }
 
+// reply comment
+function replyComment(req, res) {
+    const parts = req.url.split("/");
+    const articleId = parseInt(parts[3]);
+    const commentId = parseInt(parts[5]);
+    let body = "";
+
+    req.on("data", chunk => {
+        body += chunk.toString();
+    });
+
+    req.on("end", () => {
+        const { user, text } = JSON.parse(body);
+
+        const data = JSON.parse(fs.readFileSync(file, "utf8"));
+        const article = data.find(a => a.id === articleId);
+
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
+
+        const comment = article.comments.find(c => c.id === commentId);
+
+        if (!comment) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Comment not found" }));
+        }
+
+        const reply = {
+            id: Date.now(),
+            user,
+            text,
+            date: new Date().toISOString()
+        };
+
+        comment.replies = comment.replies || [];
+        comment.replies.push(reply);
+
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
+        res.writeHead(201, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(reply));
+    });
+}
+
+
+// like/unlike a comment
+function likeComment(req, res) {
+    const urlParts = req.url.split("/");
+    const articleId = parseInt(urlParts[3]); 
+    const commentId = parseInt(urlParts[5]);
+
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const article = data.find(a => a.id === articleId);
+
+    if (!article) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Article not found" }));
+    }
+
+    const comment = article.comments.find(c => c.id === commentId);
+    if (!comment) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Comment not found" }));
+    }
+
+    // Initialize liked if not present
+    if (typeof comment.liked === "undefined") comment.liked = false;
+
+    let message;
+    if (comment.liked) {
+        comment.liked = false;
+        message = "Comment unliked!";
+    } else {
+        comment.liked = true;
+        message = "Comment liked!";
+    }
+
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message, comment }));
+}
+
+
+
+
+
 //  Unlike an article
 function unlikeArticle(req, res) {
     const id = parseInt(req.url.split("/")[3]);
@@ -385,4 +502,6 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle };
+
+
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment};

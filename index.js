@@ -1,7 +1,7 @@
 const http = require('http');
 // const fs = require("fs");
 const PORT = process.env.PORT || 8000;
-const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle } = require('./controllers/articleController');
+const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment } = require('./controllers/articleController');
 
 const { register, login } = require("./controllers/authController");
 
@@ -20,10 +20,20 @@ const server = http.createServer((req, res) => {
     }
 
 
-    // app.delete("/api/auth/:id", deleteUser);
+    
+
+        // like/unlike a comment
+     if (
+        req.url.startsWith("/api/articles/") &&
+        req.url.includes("/comments/") &&
+        req.url.endsWith("/like") &&
+        req.method === "POST"
+    ) {
+        return likeComment(req, res);
+    }
 
     // GET
-    if (req.url === "/api/articles" && req.method === "GET") {
+   else if (req.url === "/api/articles" && req.method === "GET") {
         return getArticles(req, res);
 
     }
@@ -76,6 +86,14 @@ const server = http.createServer((req, res) => {
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/comments") && req.method === "GET") {
         return getComments(req, rea)
     }
+
+    // reply to a comment
+    else if (req.url.startsWith("/api/articles/") && req.url.includes("/comment/") && req.url.endsWith("/reply") && req.method === "POST") {
+        return replyComment(req, res);
+    }
+
+
+   
 
 
     //  Unlike an article
