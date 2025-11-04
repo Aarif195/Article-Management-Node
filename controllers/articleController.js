@@ -51,8 +51,6 @@ function createArticle(req, res) {
             const imageURL = `https://unsplash.com/800x600/?${encodeURIComponent(query)}`;
 
 
-
-
             // validating for title 
             if (!title?.trim() || "") {
                 res.writeHead(400, { "Content-Type": "application/json" });
@@ -291,7 +289,22 @@ function likeArticle(req, res) {
         return res.end(JSON.stringify({ message: "Article not found" }));
     }
 
-    articles[index].likes += 1;
+    // articles[index].likes += 1;
+
+   if (typeof articles[index].liked === "undefined") {
+        articles[index].liked = false;
+    }
+
+    // Toggle like
+    if (articles[index].liked) {
+        articles[index].likes = Math.max(articles[index].likes - 1, 0); 
+        articles[index].liked = false;
+        message = "Article unliked!";
+    } else {
+        articles[index].likes += 1;
+        articles[index].liked = true;
+        message = "Article liked!";
+    }
 
     fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 

@@ -62,10 +62,11 @@
       "backend"
     ],
     "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
-    "likes": 0,
+    "likes": 1,
     "comments": [],
     "createdAt": "2025-11-04T08:16:40.465Z",
-    "updatedAt": "2025-11-04T08:16:40.465Z"
+    "updatedAt": "2025-11-04T08:16:40.465Z",
+    "liked": true
   },
   {
     "id": 20,
@@ -79,10 +80,11 @@
       "backend"
     ],
     "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
-    "likes": 0,
+    "likes": 7,
     "comments": [],
     "createdAt": "2025-11-04T08:49:55.932Z",
-    "updatedAt": "2025-11-04T08:49:55.933Z"
+    "updatedAt": "2025-11-04T08:49:55.933Z",
+    "liked": false
   },
   {
     "id": 21,
