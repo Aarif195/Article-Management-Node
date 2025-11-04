@@ -20,6 +20,11 @@ function getArticles(req, res) {
     });
 }
 
+// Allowed categories, tags, and status
+const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
+const allowedStatuses = ["draft", "published"];
+const allowedTags = ["api", "node", "frontend", "backend"];
+
 // POST
 function createArticle(req, res) {
     // Authenticate user first
@@ -47,15 +52,19 @@ function createArticle(req, res) {
 
 
 
-            // Allowed categories, tags, and status
-            const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
-            const allowedStatuses = ["draft", "published"];
-            const allowedTags = ["api", "node", "frontend", "backend"];
 
-            if (!title?.trim() || !content?.trim()) {
+            // validating for title 
+            if (!title?.trim() || "") {
                 res.writeHead(400, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ error: "Title, and content are required." }));
+                return res.end(JSON.stringify({ error: "Title is required." }));
             }
+
+            // validating for content 
+            if (!content?.trim() || "") {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Content is required." }));
+            }
+
 
             if (!category?.trim()) {
                 res.writeHead(400, { "Content-Type": "application/json" });
@@ -231,7 +240,26 @@ function filterArticles(req, res) {
         for (const key in filters) {
             const value = filters[key].toLowerCase();
 
-            
+            //  Validate filter keys
+            if (!["search", "category", "status", "tags"].includes(key)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: `Invalid filter key: ${key}` }));
+            }
+
+            if (key === "category" && !allowedCategories.map(c => c.toLowerCase()).includes(value)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: `Invalid category: ${value}` }));
+            }
+
+            if (key === "status" && !allowedStatuses.map(s => s.toLowerCase()).includes(value)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: `Invalid status: ${value}` }));
+            }
+
+            if (key === "tags" && !allowedTags.map(t => t.toLowerCase()).includes(value)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: `Invalid tag: ${value}` }));
+            }
 
             if (key === "search") {
                 articles = articles.filter(a =>
