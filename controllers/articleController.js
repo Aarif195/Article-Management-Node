@@ -37,7 +37,15 @@ function createArticle(req, res) {
 
     req.on("end", () => {
         try {
-            const { title, content, category, status, tags, image } = JSON.parse(body);
+            const { title, content, category, status, tags } = JSON.parse(body);
+
+            // choose an image based on title or category
+            const query = category || (title ? title.split(" ")[0] : "random");
+
+            // generate an Unsplash image URL
+            const imageURL = `https://unsplash.com/800x600/?${encodeURIComponent(query)}`;
+
+
 
             // Allowed categories, tags, and status
             const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
@@ -49,17 +57,29 @@ function createArticle(req, res) {
                 return res.end(JSON.stringify({ error: "Title, and content are required." }));
             }
 
-            if (category && !allowedCategories.includes(category)) {
+            if (!category?.trim()) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Category is required." }));
+            }
+            if (!allowedCategories.includes(category)) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: "Invalid category provided." }));
             }
 
-            if (status && !allowedStatuses.includes(status)) {
+            if (!status?.trim()) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "Status is required." }));
+            }
+            if (!allowedStatuses.includes(status)) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: "Invalid status provided." }));
             }
 
-            if (tags && !tags.every(tag => allowedTags.includes(tag))) {
+            if (!tags || tags.length === 0) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: "At least one tag is required." }));
+            }
+            if (!tags.every(tag => allowedTags.includes(tag))) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: "Invalid tag(s) provided." }));
             }
@@ -72,10 +92,10 @@ function createArticle(req, res) {
                 title,
                 content,
                 author: user.username,
-                category: category || "Uncategorized",
+                category: category || "",
                 status: status || "draft",
                 tags: tags || [],
-                image: image || null,
+                image: imageURL,
                 likes: 0,
                 comments: [],
                 createdAt: new Date().toISOString(),
@@ -152,7 +172,7 @@ function updateArticle(req, res) {
         const updatedArticle = {
             ...articles[index],
             ...updatedData,
-            updatedAt: new Date().toISOString() 
+            updatedAt: new Date().toISOString()
         };
         articles[index] = updatedArticle;
 
@@ -210,6 +230,8 @@ function filterArticles(req, res) {
 
         for (const key in filters) {
             const value = filters[key].toLowerCase();
+
+            
 
             if (key === "search") {
                 articles = articles.filter(a =>
