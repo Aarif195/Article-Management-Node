@@ -150,7 +150,15 @@
     ],
     "image": "https://unsplash.com/800x600/?Deep",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762274207048,
+        "user": "Sunday",
+        "text": "Interesting topic",
+        "date": "2025-11-04T16:36:47.048Z",
+        "replies": []
+      }
+    ],
     "createdAt": "2025-11-04T09:25:47.519Z",
     "updatedAt": "2025-11-04T09:25:47.519Z"
   },
@@ -171,18 +179,20 @@
       {
         "id": 1762270489474,
         "user": "Adeola",
-        "text": "This article really helped me understand Node.js",
+        "text": "Updated comment text here",
         "date": "2025-11-04T15:34:49.474Z",
         "replies": [
           {
             "id": 1762270505266,
             "user": "Olaoluwa",
-            "text": "I agree, it clarified a lot for me too.",
+            "text": "Updated reply text here",
             "date": "2025-11-04T15:35:05.266Z",
-            "liked": true
+            "liked": true,
+            "updatedAt": "2025-11-04T16:23:09.190Z"
           }
         ],
-        "liked": true
+        "liked": true,
+        "updatedAt": "2025-11-04T16:22:48.498Z"
       }
     ],
     "createdAt": "2025-11-04T09:27:57.742Z",
@@ -218,7 +228,22 @@
     ],
     "image": "https://unsplash.com/800x600/?Deep",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762273873310,
+        "user": "Moses",
+        "text": "I enjoyed the new subject",
+        "date": "2025-11-04T16:31:13.310Z",
+        "replies": [
+          {
+            "id": 1762273957716,
+            "user": "Mr Doe",
+            "text": "yes, same for me",
+            "date": "2025-11-04T16:32:37.716Z"
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-04T09:31:25.869Z",
     "updatedAt": "2025-11-04T09:31:25.869Z"
   },

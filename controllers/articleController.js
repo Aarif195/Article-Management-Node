@@ -519,6 +519,78 @@ function likeReply(req, res) {
 }
 
 
+//  Edit a comment or reply
+function editCommentOrReply(req, res) {
+    const urlParts = req.url.split("/");
+    const articleId = parseInt(urlParts[3]);
+    const commentId = parseInt(urlParts[5]);
+    const isReply = urlParts.includes("replies");
+    const replyId = isReply ? parseInt(urlParts[7]) : null;
+
+    let body = "";
+    req.on("data", chunk => (body += chunk.toString()));
+    req.on("end", () => {
+        const { text } = JSON.parse(body);
+        if (!text?.trim()) {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Text cannot be empty." }));
+        }
+
+        const data = JSON.parse(fs.readFileSync(file, "utf8"));
+        const article = data.find(a => a.id === articleId);
+        if (!article) return res.writeHead(404).end(JSON.stringify({ message: "Article not found" }));
+
+        const comment = article.comments.find(c => c.id === commentId);
+        if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
+
+        if (isReply) {
+            const reply = comment.replies.find(r => r.id === replyId);
+            if (!reply) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
+            reply.text = text;
+            reply.updatedAt = new Date().toISOString();
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
+            res.writeHead(200, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Reply updated!", reply }));
+        } else {
+            comment.text = text;
+            comment.updatedAt = new Date().toISOString();
+            fs.writeFileSync(file, JSON.stringify(data, null, 2));
+            res.writeHead(200, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Comment updated!", comment }));
+        }
+    });
+}
+
+//  Delete a comment or reply
+function deleteCommentOrReply(req, res) {
+    const urlParts = req.url.split("/");
+    const articleId = parseInt(urlParts[3]);
+    const commentId = parseInt(urlParts[5]);
+    const isReply = urlParts.includes("replies");
+    const replyId = isReply ? parseInt(urlParts[7]) : null;
+
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const article = data.find(a => a.id === articleId);
+    if (!article) return res.writeHead(404).end(JSON.stringify({ message: "Article not found" }));
+
+    const comment = article.comments.find(c => c.id === commentId);
+    if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
+
+    if (isReply) {
+        const replyIndex = comment.replies.findIndex(r => r.id === replyId);
+        if (replyIndex === -1) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
+        comment.replies.splice(replyIndex, 1);
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+        res.writeHead(204, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Reply deleted!" }));
+    } else {
+        const commentIndex = article.comments.findIndex(c => c.id === commentId);
+        article.comments.splice(commentIndex, 1);
+        fs.writeFileSync(file, JSON.stringify(data, null, 2));
+        res.writeHead(204, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Comment deleted!" }));
+    }
+}
 
 
 
@@ -549,4 +621,4 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment, likeReply};
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment, likeReply, editCommentOrReply, deleteCommentOrReply};

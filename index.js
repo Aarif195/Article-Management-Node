@@ -1,7 +1,7 @@
 const http = require('http');
 // const fs = require("fs");
 const PORT = process.env.PORT || 8000;
-const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply } = require('./controllers/articleController');
+const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply } = require('./controllers/articleController');
 
 const { register, login } = require("./controllers/authController");
 
@@ -31,7 +31,6 @@ const server = http.createServer((req, res) => {
         return likeReply(req, res);
     }
 
-
     // like/unlike a comment
     if (
         req.url.startsWith("/api/articles/") &&
@@ -42,6 +41,45 @@ const server = http.createServer((req, res) => {
         return likeComment(req, res);
     }
 
+    // Edit comment
+    else if (
+        req.url.startsWith("/api/articles/") &&
+        req.url.includes("/comments/") &&
+        !req.url.includes("/replies") &&
+        req.method === "PUT"
+    ) {
+        return editCommentOrReply(req, res);
+    }
+
+    // Edit reply
+    else if (
+        req.url.startsWith("/api/articles/") &&
+        req.url.includes("/comments/") &&
+        req.url.includes("/replies/") &&
+        req.method === "PUT"
+    ) {
+        return editCommentOrReply(req, res);
+    }
+
+    // Delete comment
+    else if (
+        req.url.startsWith("/api/articles/") &&
+        req.url.includes("/comments/") &&
+        !req.url.includes("/replies") &&
+        req.method === "DELETE"
+    ) {
+        return deleteCommentOrReply(req, res);
+    }
+
+    // Delete reply
+    else if (
+        req.url.startsWith("/api/articles/") &&
+        req.url.includes("/comments/") &&
+        req.url.includes("/replies/") &&
+        req.method === "DELETE"
+    ) {
+        return deleteCommentOrReply(req, res);
+    }
 
 
     // GET
@@ -59,9 +97,7 @@ const server = http.createServer((req, res) => {
     // GET article by ID
     if (req.url.startsWith("/api/articles/") && req.method === "GET") {
         console.log("Get by id called");
-
         return getArticleById(req, res);
-
     }
 
     // update
@@ -80,7 +116,6 @@ const server = http.createServer((req, res) => {
         return filterArticles(req, res);
 
     }
-
 
 
     // like
@@ -103,12 +138,6 @@ const server = http.createServer((req, res) => {
     else if (req.url.startsWith("/api/articles/") && req.url.includes("/comment/") && req.url.endsWith("/reply") && req.method === "POST") {
         return replyComment(req, res);
     }
-
-
-
-
-    
-
 
 
     //  Unlike an article
