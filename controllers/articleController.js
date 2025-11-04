@@ -474,6 +474,51 @@ function likeComment(req, res) {
     res.end(JSON.stringify({ message, comment }));
 }
 
+// like/unlike a reply
+function likeReply(req, res) {
+    const urlParts = req.url.split("/");
+    const articleId = parseInt(urlParts[3]);
+    const commentId = parseInt(urlParts[5]);
+    const replyId = parseInt(urlParts[7]);
+
+    const data = JSON.parse(fs.readFileSync(file, "utf8"));
+    const article = data.find(a => a.id === articleId);
+    if (!article) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Article not found" }));
+    }
+
+    const comment = article.comments.find(c => c.id === commentId);
+    if (!comment) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Comment not found" }));
+    }
+
+    const reply = comment.replies.find(r => r.id === replyId);
+    if (!reply) {
+        res.writeHead(404, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Reply not found" }));
+    }
+
+    // Initialize liked if not present
+    if (typeof reply.liked === "undefined") reply.liked = false;
+
+    let message;
+    if (reply.liked) {
+        reply.liked = false;
+        message = "Reply unliked!";
+    } else {
+        reply.liked = true;
+        message = "Reply liked!";
+    }
+
+    fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ message, reply }));
+}
+
+
 
 
 
@@ -504,4 +549,4 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment};
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment, likeReply};

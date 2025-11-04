@@ -178,9 +178,11 @@
             "id": 1762270505266,
             "user": "Olaoluwa",
             "text": "I agree, it clarified a lot for me too.",
-            "date": "2025-11-04T15:35:05.266Z"
+            "date": "2025-11-04T15:35:05.266Z",
+            "liked": true
           }
-        ]
+        ],
+        "liked": true
       }
     ],
     "createdAt": "2025-11-04T09:27:57.742Z",
