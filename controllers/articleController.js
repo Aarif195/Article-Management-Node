@@ -1,6 +1,5 @@
 const fs = require("fs");
 
-
 // file path
 const file = "articles.json";
 if (!fs.existsSync(file)) {
@@ -41,13 +40,13 @@ function createArticle(req, res) {
             const { title, content, category, status, tags, image } = JSON.parse(body);
 
             // Allowed categories, tags, and status
-            const allowedCategories = ["Programming", "Technology", "Design"];
+            const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
             const allowedStatuses = ["draft", "published"];
             const allowedTags = ["api", "node", "frontend", "backend"];
 
             if (!title?.trim() || !content?.trim()) {
                 res.writeHead(400, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ error: "Title, content, and author are required." }));
+                return res.end(JSON.stringify({ error: "Title, and content are required." }));
             }
 
             if (category && !allowedCategories.includes(category)) {
@@ -72,7 +71,7 @@ function createArticle(req, res) {
                 id: articles.length ? articles[articles.length - 1].id + 1 : 1,
                 title,
                 content,
-                author: user.username, 
+                author: user.username,
                 category: category || "Uncategorized",
                 status: status || "draft",
                 tags: tags || [],
@@ -150,10 +149,10 @@ function updateArticle(req, res) {
             return res.end(JSON.stringify({ message: "Forbidden: You can only update your own articles" }));
         }
 
-        const updatedArticle = { 
-            ...articles[index], 
-            ...updatedData, 
-            updatedAt: new Date().toISOString() // update timestamp
+        const updatedArticle = {
+            ...articles[index],
+            ...updatedData,
+            updatedAt: new Date().toISOString() 
         };
         articles[index] = updatedArticle;
 
@@ -164,9 +163,15 @@ function updateArticle(req, res) {
     });
 }
 
-
 // delete
 function deleteArticle(req, res) {
+
+    const user = require('./authController').authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const id = parseInt(req.url.split("/").pop());
     const data = fs.readFileSync(file, "utf8");
     let articles = JSON.parse(data);
@@ -177,8 +182,13 @@ function deleteArticle(req, res) {
         return res.end(JSON.stringify({ message: "Article not found" }));
     }
 
-    const deleted = articles.splice(index, 1);
 
+    if (articles[index].author !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own articles" }));
+    }
+
+    const deleted = articles.splice(index, 1);
     fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 
     res.writeHead(204, { "Content-Type": "application/json" });

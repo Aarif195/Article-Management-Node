@@ -1,21 +1,16 @@
 [
   {
-    "id": 1,
-    "username": "folake",
-    "email": "abdul@example.com",
-    "password": "8d969eef6ecad3c29a3a629280e686cf0c3f5d5a86aff3ca12020c923adc6c92"
-  },
-  {
-    "id": 2,
-    "username": "omoluabi",
-    "email": "omo@example.com",
-    "password": "ef797c8118f02dfb649607dd5d3f8c7623048c9c063d532cc95c5ed7a898a64f"
-  },
-  {
     "id": 5,
     "username": "Adeyinke",
     "email": "Adeyinka@example.com",
     "password": "66ce34154c1eeba35baae112aa5f70ed82891ccae8a528a8c407fb77a0a79e82",
     "token": "e0c769945f32dbb4c10722036a622b04ee49a9dfa4d8ac21"
+  },
+  {
+    "id": 6,
+    "username": "TestUser123",
+    "email": "testuser123@example.com",
+    "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
+    "token": "645a3ff0f031b9e16b90c2704a52a0c103c1b488f29fb3fe"
   }
 ]

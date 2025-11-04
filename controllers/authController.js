@@ -4,14 +4,12 @@ const crypto = require("crypto");
 
 const file = path.join(__dirname, "../users.json");
 
-// Helper to read users
 function readUsers() {
     if (!fs.existsSync(file)) fs.writeFileSync(file, "[]");
     const data = fs.readFileSync(file, "utf8");
     return JSON.parse(data);
 }
 
-// Helper to write users
 function writeUsers(users) {
     fs.writeFileSync(file, JSON.stringify(users, null, 2));
 }
@@ -108,7 +106,6 @@ function login(req, res) {
     });
 }
 
-// 999876
 
 // DELETE USER
 function deleteUser(req, res) {
@@ -130,7 +127,7 @@ function deleteUser(req, res) {
         return res.end(JSON.stringify({ message: "User not found" }));
     }
 
-    // Only allow user to delete their own account
+    
     if (users[index].id !== user.id) {
         res.writeHead(403, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own account" }));
@@ -139,9 +136,10 @@ function deleteUser(req, res) {
     const deletedUser = users.splice(index, 1);
     writeUsers(users);
 
-    res.writeHead(200, { "Content-Type": "application/json" });
+    res.writeHead(204, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "User deleted successfully", deletedUser }));
 }
 
+// Test@1234
 
 module.exports = { register, login, deleteUser, authenticate };

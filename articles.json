@@ -1,39 +1,5 @@
 [
   {
-    "id": 13,
-    "title": "Mastering Node.js Core",
-    "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
-    "author": "Adebayo Abdulazeez",
-    "category": "Programming",
-    "status": "published",
-    "tags": [
-      "node",
-      "backend"
-    ],
-    "image": "https://example.com/image.jpg",
-    "likes": 0,
-    "comments": [],
-    "createdAt": "2025-11-03T11:30:36.781Z",
-    "updatedAt": "2025-11-03T11:30:36.783Z"
-  },
-  {
-    "id": 14,
-    "title": "Mastering Node.js Core",
-    "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
-    "author": "Adebayo Abdulazeez",
-    "category": "Programming",
-    "status": "published",
-    "tags": [
-      "node",
-      "backend"
-    ],
-    "image": "https://example.com/image.jpg",
-    "likes": 0,
-    "comments": [],
-    "createdAt": "2025-11-03T12:00:13.492Z",
-    "updatedAt": "2025-11-03T12:00:13.495Z"
-  },
-  {
     "id": 15,
     "title": "Mastering Node.js Core",
     "content": "An in-depth look at Node.js modules, event loop, and performance optimization.",
@@ -83,5 +49,22 @@
     "comments": [],
     "createdAt": "2025-11-03T16:34:01.337Z",
     "updatedAt": "2025-11-03T16:34:01.338Z"
+  },
+  {
+    "id": 19,
+    "title": "Deep Dive into Node.js Streams",
+    "content": "Understanding readable, writable, and transform streams in Node.js.",
+    "author": "TestUser123",
+    "category": "Programming",
+    "status": "draft",
+    "tags": [
+      "node",
+      "backend"
+    ],
+    "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-04T08:16:40.465Z",
+    "updatedAt": "2025-11-04T08:16:40.465Z"
   }
 ]
