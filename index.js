@@ -20,6 +20,27 @@ const server = http.createServer((req, res) => {
         return login(req, res);
     }
 
+     // GET
+   // ✅ Combined route: handles both pagination and filtering
+else if (req.url.startsWith("/api/articles") && req.method === "GET") {
+    const urlObj = new URL(req.url, `http://${req.headers.host}`);
+    const params = Object.keys(Object.fromEntries(urlObj.searchParams.entries()));
+
+    // If no query, or only pagination params => getArticles
+    if (params.length === 0 || params.includes("page") || params.includes("limit")) {
+        return getArticles(req, res);
+    }
+
+    // Otherwise => filterArticles
+    return filterArticles(req, res);
+}
+
+ // filtering
+    // else if (req.url.startsWith("/api/articles") && req.method === "GET" && req.url !== "/api/articles") {
+    //     return filterArticles(req, res);
+
+    // }
+
 
     // like/unlike a reply
     else if (
@@ -83,11 +104,7 @@ const server = http.createServer((req, res) => {
     }
 
 
-    // GET
-    else if (req.url === "/api/articles" && req.method === "GET") {
-        return getArticles(req, res);
-
-    }
+   
 
     // POST
     else if (req.url === "/api/articles" && req.method === "POST") {
@@ -112,11 +129,7 @@ const server = http.createServer((req, res) => {
         return deleteArticle(req, res);
     }
 
-    // filtering
-    else if (req.url.startsWith("/api/articles") && req.method === "GET" && req.url !== "/api/articles") {
-        return filterArticles(req, res);
 
-    }
 
     // Like Article
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/like") && req.method === "POST") {

@@ -1,5 +1,6 @@
-const authController = require('./authController');
+const url =  require("url");
 const fs = require("fs");
+const authController = require('./authController');
 
 // file path
 const file = "articles.json";
@@ -9,17 +10,54 @@ if (!fs.existsSync(file)) {
 
 // GET
 function getArticles(req, res) {
-    fs.readFile(file, "utf8", (err, data) => {
-        if (err) {
-            res.writeHead(500, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ error: "Internal server error" }));
-        }
+  fs.readFile(file, "utf8", (err, data) => {
+    if (err) {
+      res.writeHead(500, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Internal server error" }));
+    }
 
-        const articles = JSON.parse(data);
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(articles));
-    });
+    let articles = [];
+    try {
+      articles = JSON.parse(data);
+      if (!Array.isArray(articles)) articles = [];
+    } catch (e) {
+      articles = [];
+    }
+
+    // newest first
+    const sortedArticles = articles.sort(
+      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+    );
+
+    // parse query params without imports
+    const fullUrl = new URL(req.url, `http://${req.headers.host}`);
+    const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
+    const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
+
+    const totalArticles = sortedArticles.length;
+    const totalPages = totalArticles === 0 ? 0 : Math.ceil(totalArticles / limit);
+
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+
+    let paginatedArticles = [];
+    if (page <= totalPages && startIndex < totalArticles) {
+      paginatedArticles = sortedArticles.slice(startIndex, endIndex);
+    }
+
+    const response = {
+      totalArticles,
+      totalPages,
+      currentPage: page,
+      limit,
+      articles: paginatedArticles,
+    };
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(response));
+  });
 }
+
 
 // Allowed categories, tags, and status
 const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
@@ -630,4 +668,4 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle,filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
