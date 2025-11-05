@@ -156,7 +156,14 @@
         "user": "Sunday",
         "text": "Interesting topic",
         "date": "2025-11-04T16:36:47.048Z",
-        "replies": []
+        "replies": [
+          {
+            "id": 1762356881534,
+            "user": "Aina",
+            "text": "Absolutely the  true",
+            "date": "2025-11-05T15:34:41.534Z"
+          }
+        ]
       }
     ],
     "createdAt": "2025-11-04T09:25:47.519Z",
@@ -314,6 +321,20 @@
         "user": "Monday",
         "text": "Interesting Subject",
         "date": "2025-11-05T08:17:43.288Z",
+        "replies": []
+      },
+      {
+        "id": 1762356949711,
+        "user": "Monday",
+        "text": "Interesting Subject",
+        "date": "2025-11-05T15:35:49.711Z",
+        "replies": []
+      },
+      {
+        "id": 1762356959455,
+        "user": "NNN",
+        "text": "Interesting Subject",
+        "date": "2025-11-05T15:35:59.455Z",
         "replies": []
       }
     ],
@@ -608,5 +629,22 @@
     "comments": [],
     "createdAt": "2025-11-05T14:09:49.816Z",
     "updatedAt": "2025-11-05T14:09:49.818Z"
+  },
+  {
+    "id": 49,
+    "title": "My new blog post",
+    "content": "This is the content",
+    "author": "Test Gmail",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend",
+      "backend"
+    ],
+    "image": "/uploads/luis-villasmil-1HzaqbBpxBs-unsplash-1762354603389.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-05T14:56:43.392Z",
+    "updatedAt": "2025-11-05T14:56:43.392Z"
   }
 ]

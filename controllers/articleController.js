@@ -24,6 +24,7 @@ function generateFileName(originalName) {
 
 
 
+
 // GET
 function getArticles(req, res) {
     fs.readFile(file, "utf8", (err, data) => {
@@ -49,31 +50,73 @@ function getArticles(req, res) {
         const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
         const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
 
-        const totalArticles = sortedArticles.length;
-        const totalPages = totalArticles === 0 ? 0 : Math.ceil(totalArticles / limit);
+        // --- VALIDATION FOR FILTERS ---
+        const filters = Object.fromEntries(fullUrl.searchParams.entries());
+        for (const key in filters) {
+            const value = filters[key].toLowerCase();
+
+            if (!["page", "limit", "category", "status", "tags", "search"].includes(key)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ error: `Invalid query key: ${key}` }));
+            }
+
+            if (key === "category" && !allowedCategories.map(c => c.toLowerCase()).includes(value)) {
+                return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
+            }
+
+            if (key === "status" && !allowedStatuses.map(s => s.toLowerCase()).includes(value)) {
+                return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
+            }
+
+            if (key === "tags" && !allowedTags.map(t => t.toLowerCase()).includes(value)) {
+                return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
+            }
+        }
+
+        // Apply filtering (if any)
+        let filteredArticles = [...sortedArticles];
+        for (const key in filters) {
+            const value = filters[key].toLowerCase();
+
+            if (key === "search") {
+                filteredArticles = filteredArticles.filter(a =>
+                    a.title.toLowerCase().includes(value) ||
+                    a.content.toLowerCase().includes(value) ||
+                    (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
+                );
+            } else if (key === "tags") {
+                filteredArticles = filteredArticles.filter(a =>
+                    Array.isArray(a.tags) &&
+                    a.tags.map(tag => tag.toLowerCase()).includes(value)
+                );
+            } else if (key === "category" || key === "status") {
+                filteredArticles = filteredArticles.filter(a =>
+                    a[key] && a[key].toString().toLowerCase() === value
+                );
+            }
+        }
+
+        const totalData = filteredArticles.length;
+        const totalPages = totalData === 0 ? 0 : Math.ceil(totalData / limit);
 
         const startIndex = (page - 1) * limit;
         const endIndex = startIndex + limit;
 
-
-        // only the part of the array for the requested page
-        let paginatedArticles = [];
-        if (page <= totalPages && startIndex < totalArticles) {
-            paginatedArticles = sortedArticles.slice(startIndex, endIndex);
-        }
+        const dataSlice = startIndex < totalData ? filteredArticles.slice(startIndex, endIndex) : [];
 
         const response = {
-            totalArticles,
+            totalData,
             totalPages,
             currentPage: page,
             limit,
-            articles: paginatedArticles,
+            data: dataSlice,
         };
 
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(JSON.stringify(response));
     });
 }
+
 
 
 // Allowed categories, tags, and status
@@ -328,7 +371,8 @@ function filterArticles(req, res) {
                 return res.end(JSON.stringify({ error: `Invalid filter key: ${key}` }));
             }
 
-            // Validate allowed values
+            // Validate allowed values 
+
             if (key === "category" && !allowedCategories.map(c => c.toLowerCase()).includes(value)) {
                 res.writeHead(200, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify([]));
