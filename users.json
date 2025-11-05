@@ -12,5 +12,12 @@
     "email": "testuser123@example.com",
     "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
     "token": "645a3ff0f031b9e16b90c2704a52a0c103c1b488f29fb3fe"
+  },
+  {
+    "id": 7,
+    "username": "Test Gmail",
+    "email": "test.com",
+    "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
+    "token": "9c4f138797308b2341fd5c1e05962fa21c90b40ebcf5c9a6"
   }
 ]

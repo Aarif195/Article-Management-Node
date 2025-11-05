@@ -1,10 +1,10 @@
 const http = require('http');
 // const fs = require("fs");
 const PORT = process.env.PORT || 8000;
+
 const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply } = require('./controllers/articleController');
 
 const { register, login } = require("./controllers/authController");
-
 
 
 const server = http.createServer((req, res) => {
@@ -13,6 +13,7 @@ const server = http.createServer((req, res) => {
     if (req.url === "/api/register" && req.method === "POST") {
         return register(req, res);
     }
+
 
     // Login
     else if (req.url === "/api/login" && req.method === "POST") {
@@ -117,8 +118,7 @@ const server = http.createServer((req, res) => {
 
     }
 
-
-    // like
+    // Like Article
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/like") && req.method === "POST") {
         console.log(req.url.split("/"));
         return likeArticle(req, res);

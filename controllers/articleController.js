@@ -1,3 +1,4 @@
+const authController = require('./authController');
 const fs = require("fs");
 
 // file path
@@ -28,7 +29,7 @@ const allowedTags = ["api", "node", "frontend", "backend"];
 // POST
 function createArticle(req, res) {
     // Authenticate user first
-    const user = require('./authController').authenticate(req);
+    const user = authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -144,7 +145,8 @@ function getArticleById(req, res) {
 // update
 function updateArticle(req, res) {
     // Authenticate user first
-    const user = require('./authController').authenticate(req);
+    const user = authController.authenticate(req);
+    ;
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -193,7 +195,7 @@ function updateArticle(req, res) {
 // delete
 function deleteArticle(req, res) {
 
-    const user = require('./authController').authenticate(req);
+    const user = authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -340,6 +342,13 @@ function likeArticle(req, res) {
 
 // post comment
 function postComment(req, res) {
+
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const id = parseInt(req.url.split("/")[3]);
     let body = "";
 
@@ -439,7 +448,7 @@ function replyComment(req, res) {
 // like/unlike a comment
 function likeComment(req, res) {
     const urlParts = req.url.split("/");
-    const articleId = parseInt(urlParts[3]); 
+    const articleId = parseInt(urlParts[3]);
     const commentId = parseInt(urlParts[5]);
 
     const data = JSON.parse(fs.readFileSync(file, "utf8"));
@@ -621,4 +630,4 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment , likeComment, likeReply, editCommentOrReply, deleteCommentOrReply};
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };

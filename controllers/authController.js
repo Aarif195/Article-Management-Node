@@ -55,6 +55,7 @@ function register(req, res) {
     });
 }
 
+
 // authenticate
 function authenticate(req) {
   const authHeader = req.headers["authorization"];
@@ -90,7 +91,7 @@ function login(req, res) {
             return res.end(JSON.stringify({ message: "Invalid credentials" }));
         }
 
-        // Simple token (just an example)
+        // Simple token 
         const token = crypto.randomBytes(24).toString("hex");
 
         // Save token to user
