@@ -35,6 +35,8 @@ else if (req.url.startsWith("/api/articles") && req.method === "GET") {
     return filterArticles(req, res);
 }
 
+
+
  // filtering
     // else if (req.url.startsWith("/api/articles") && req.method === "GET" && req.url !== "/api/articles") {
     //     return filterArticles(req, res);

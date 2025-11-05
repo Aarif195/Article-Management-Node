@@ -1,4 +1,4 @@
-const url =  require("url");
+const url = require("url");
 const fs = require("fs");
 const authController = require('./authController');
 
@@ -10,52 +10,52 @@ if (!fs.existsSync(file)) {
 
 // GET
 function getArticles(req, res) {
-  fs.readFile(file, "utf8", (err, data) => {
-    if (err) {
-      res.writeHead(500, { "Content-Type": "application/json" });
-      return res.end(JSON.stringify({ error: "Internal server error" }));
-    }
+    fs.readFile(file, "utf8", (err, data) => {
+        if (err) {
+            res.writeHead(500, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ error: "Internal server error" }));
+        }
 
-    let articles = [];
-    try {
-      articles = JSON.parse(data);
-      if (!Array.isArray(articles)) articles = [];
-    } catch (e) {
-      articles = [];
-    }
+        let articles = [];
+        try {
+            articles = JSON.parse(data);
+            if (!Array.isArray(articles)) articles = [];
+        } catch (e) {
+            articles = [];
+        }
 
-    // newest first
-    const sortedArticles = articles.sort(
-      (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-    );
+        // newest first
+        const sortedArticles = articles.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
 
-    // parse query params without imports
-    const fullUrl = new URL(req.url, `http://${req.headers.host}`);
-    const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
-    const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
+        // parse query params without imports
+        const fullUrl = new URL(req.url, `http://${req.headers.host}`);
+        const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
+        const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
 
-    const totalArticles = sortedArticles.length;
-    const totalPages = totalArticles === 0 ? 0 : Math.ceil(totalArticles / limit);
+        const totalArticles = sortedArticles.length;
+        const totalPages = totalArticles === 0 ? 0 : Math.ceil(totalArticles / limit);
 
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
+        const startIndex = (page - 1) * limit;
+        const endIndex = startIndex + limit;
 
-    let paginatedArticles = [];
-    if (page <= totalPages && startIndex < totalArticles) {
-      paginatedArticles = sortedArticles.slice(startIndex, endIndex);
-    }
+        let paginatedArticles = [];
+        if (page <= totalPages && startIndex < totalArticles) {
+            paginatedArticles = sortedArticles.slice(startIndex, endIndex);
+        }
 
-    const response = {
-      totalArticles,
-      totalPages,
-      currentPage: page,
-      limit,
-      articles: paginatedArticles,
-    };
+        const response = {
+            totalArticles,
+            totalPages,
+            currentPage: page,
+            limit,
+            articles: paginatedArticles,
+        };
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(response));
-  });
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(response));
+    });
 }
 
 
@@ -278,58 +278,39 @@ function filterArticles(req, res) {
         for (const key in filters) {
             const value = filters[key].toLowerCase();
 
-            const hasMatch = articles.some(a => {
-                if (key === "search") {
-                    return (
-                        a.title.toLowerCase().includes(value) ||
-                        a.content.toLowerCase().includes(value) ||
-                        (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
-                    );
-                } else if (key === "tags" && Array.isArray(a.tags)) {
-                    return a.tags.map(tag => tag.toLowerCase()).includes(value);
-                } else {
-                    return a[key]?.toString().toLowerCase() === value;
-                }
-            });
-
-            if (!hasMatch) {
-                res.writeHead(404, { "Content-Type": "application/json" });
-                const errorMessages = {
-                    category: `No articles found for this category: ${value}`,
-                    status: `No articles found for this status: ${value}`,
-                    tags: `No articles found for this tag: ${value}`,
-                    search: `No articles match the search term: ${value}`
-                };
-                return res.end(JSON.stringify({ error: errorMessages[key] || "No matching articles found." }));
-            }
-
-            //  Validate filter keys
+            //  Validate keys
             if (!["search", "category", "status", "tags"].includes(key)) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: `Invalid filter key: ${key}` }));
             }
 
+            // Validate allowed values
             if (key === "category" && !allowedCategories.map(c => c.toLowerCase()).includes(value)) {
-                res.writeHead(400, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ error: `Invalid category: ${value}` }));
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify([]));
             }
 
             if (key === "status" && !allowedStatuses.map(s => s.toLowerCase()).includes(value)) {
-                res.writeHead(400, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ error: `Invalid status: ${value}` }));
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify([]));
             }
 
             if (key === "tags" && !allowedTags.map(t => t.toLowerCase()).includes(value)) {
-                res.writeHead(400, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ error: `Invalid tag: ${value}` }));
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify([]));
             }
 
-
+            //  Apply the filtering
             if (key === "search") {
                 articles = articles.filter(a =>
                     a.title.toLowerCase().includes(value) ||
                     a.content.toLowerCase().includes(value) ||
                     (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
+                );
+            } else if (key === "tags") {
+                articles = articles.filter(a =>
+                    Array.isArray(a.tags) &&
+                    a.tags.map(tag => tag.toLowerCase()).includes(value)
                 );
             } else {
                 articles = articles.filter(a =>
@@ -339,9 +320,10 @@ function filterArticles(req, res) {
         }
 
         res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(articles));
+        res.end(JSON.stringify(articles.length ? articles : []));
     });
 }
+
 
 // Like Article
 function likeArticle(req, res) {
@@ -668,4 +650,4 @@ function unlikeArticle(req, res) {
 
 
 
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle,filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
