@@ -4,20 +4,34 @@
     "username": "Adeyinke",
     "email": "Adeyinka@example.com",
     "password": "66ce34154c1eeba35baae112aa5f70ed82891ccae8a528a8c407fb77a0a79e82",
-    "token": "e0c769945f32dbb4c10722036a622b04ee49a9dfa4d8ac21"
+    "token": null
   },
   {
     "id": 6,
     "username": "TestUser123",
     "email": "testuser123@example.com",
     "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
-    "token": "645a3ff0f031b9e16b90c2704a52a0c103c1b488f29fb3fe"
+    "token": null
   },
   {
     "id": 7,
     "username": "Test Gmail",
     "email": "test.com",
     "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
-    "token": "64d6903cbee74490811afd26d5f1a0ab0a84084ebda2cb85"
+    "token": null
+  },
+  {
+    "id": 8,
+    "username": "Sunday",
+    "email": "sunday@example.com",
+    "password": "54b688a517f7654563a6c64d945a3670880a4c602ec67a065bbebbcd2b22edd5",
+    "token": null
+  },
+  {
+    "id": 9,
+    "username": "monday",
+    "email": "monday@example.com",
+    "password": "8b496bd539987baef7a52f84d40c70be867c040d4a619fa0ffbadbda1522bc27",
+    "token": "0489c08bb5b23c8ba415190b8535e67e5b5cf279ea6c1d98"
   }
 ]

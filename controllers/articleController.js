@@ -124,6 +124,7 @@ const allowedTags = ["api", "node", "frontend", "backend"];
 function createArticle(req, res) {
     // Authenticate user first
     const user = authController.authenticate(req);
+    
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));

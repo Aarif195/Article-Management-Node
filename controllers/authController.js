@@ -56,18 +56,21 @@ function register(req, res) {
 }
 
 
-// authenticate
+
 function authenticate(req) {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader) return null;
+    const authHeader = req.headers["authorization"];
+    if (!authHeader) return null; 
 
-  const parts = authHeader.split(" ");
-  if (parts.length !== 2 || parts[0] !== "Bearer") return null;
+    const parts = authHeader.trim().split(/\s+/);
+    if (parts.length !== 2 || parts[0] !== "Bearer") return null;
 
-  const token = parts[1];
-  const users = readUsers();
-  const user = users.find(u => u.token === token);
-  return user || null;
+    const token = parts[1];
+
+    // Load users
+    const users = JSON.parse(fs.readFileSync(file, "utf8"));
+    const user = users.find(u => u.token === token);
+
+    return user || null; 
 }
 
 
@@ -91,11 +94,15 @@ function login(req, res) {
             return res.end(JSON.stringify({ message: "Invalid credentials" }));
         }
 
-        // Simple token 
+        // Generate a new token for current login
         const token = crypto.randomBytes(24).toString("hex");
 
-        // Save token to user
-        user.token = token;
+        // Overwrite all other users' tokens
+        users.forEach(u => {
+            u.token = u.id === user.id ? token : null;
+        });
+
+        // Save users back to file
         writeUsers(users);
 
         res.writeHead(200, { "Content-Type": "application/json" });
@@ -106,6 +113,8 @@ function login(req, res) {
         }));
     });
 }
+
+
 
 
 // DELETE USER
