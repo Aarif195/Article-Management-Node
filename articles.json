@@ -623,7 +623,23 @@
     ],
     "image": "/uploads/hello-1762351789809.jpg",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762428554705,
+        "user": "Test Gmail",
+        "text": "true true true",
+        "date": "2025-11-06T11:29:14.705Z",
+        "replies": [
+          {
+            "id": 1762428591929,
+            "user": "Test Gmail",
+            "text": "nice nice",
+            "date": "2025-11-06T11:29:51.929Z",
+            "liked": false
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-05T14:09:49.816Z",
     "updatedAt": "2025-11-05T14:09:49.818Z"
   },
@@ -672,7 +688,8 @@
             "id": 1762425047022,
             "user": "TestUser123",
             "text": "Absolutely the  true",
-            "date": "2025-11-06T10:30:47.022Z"
+            "date": "2025-11-06T10:30:47.022Z",
+            "liked": true
           },
           {
             "id": 1762425668952,
@@ -685,6 +702,12 @@
             "user": "Test Gmail",
             "text": "Absolutely the  true",
             "date": "2025-11-06T10:43:12.523Z"
+          },
+          {
+            "id": 1762426734187,
+            "user": "Test Gmail",
+            "text": "Absolutely the  true",
+            "date": "2025-11-06T10:58:54.187Z"
           }
         ]
       }

@@ -631,6 +631,11 @@ function likeComment(req, res) {
 // like/unlike a reply
 function likeReply(req, res) {
 
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
 
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
@@ -656,6 +661,16 @@ function likeReply(req, res) {
         return res.end(JSON.stringify({ message: "Reply not found" }));
     }
 
+    console.log("Reply user:", reply.user);
+    console.log("Token user:", user.username);
+
+
+    if (reply.user !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "You are not allowed to like to this reply" }));
+    }
+
+
     // Initialize liked if not present
     if (typeof reply.liked === "undefined") reply.liked = false;
 
@@ -667,6 +682,8 @@ function likeReply(req, res) {
         reply.liked = true;
         message = "Reply liked!";
     }
+
+
 
     fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
