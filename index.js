@@ -2,7 +2,7 @@ const http = require('http');
 // const fs = require("fs");
 const PORT = process.env.PORT || 8000;
 
-const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply } = require('./controllers/articleController');
+const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply } = require('./controllers/articleController');
 
 const { register, login } = require("./controllers/authController");
 
@@ -144,11 +144,6 @@ const server = http.createServer((req, res) => {
         return replyComment(req, res);
     }
 
-
-    //  Unlike an article
-    else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/unlike") && req.method === "POST") {
-        return unlikeArticle(req, res)
-    }
 
 
     // Delete user

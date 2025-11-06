@@ -606,7 +606,29 @@
     ],
     "image": "/uploads/hello-1762351680158.jpg",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762434244159,
+        "user": "Test Gmail",
+        "text": "good good like",
+        "date": "2025-11-06T13:04:04.159Z",
+        "replies": []
+      },
+      {
+        "id": 1762435123461,
+        "user": "Test Gmail",
+        "text": "good good like",
+        "date": "2025-11-06T13:18:43.461Z",
+        "replies": [
+          {
+            "id": 1762435155617,
+            "user": "Test Gmail",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-06T13:19:15.617Z"
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-05T14:08:00.160Z",
     "updatedAt": "2025-11-05T14:08:00.160Z"
   },
@@ -629,16 +651,7 @@
         "user": "Test Gmail",
         "text": "comment edited",
         "date": "2025-11-06T11:29:14.705Z",
-        "replies": [
-          {
-            "id": 1762428591929,
-            "user": "Test Gmail",
-            "text": "Updated ",
-            "date": "2025-11-06T11:29:51.929Z",
-            "liked": false,
-            "updatedAt": "2025-11-06T12:47:45.149Z"
-          }
-        ],
+        "replies": [],
         "updatedAt": "2025-11-06T12:45:56.996Z"
       }
     ],

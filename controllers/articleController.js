@@ -691,7 +691,6 @@ function likeReply(req, res) {
     res.end(JSON.stringify({ message, reply }));
 }
 
-
 //  Edit a comment or reply
 function editCommentOrReply(req, res) {
 
@@ -723,12 +722,6 @@ function editCommentOrReply(req, res) {
         const comment = article.comments.find(c => c.id === commentId);
 
         if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
-
-        // if (comment.user !== user.username) {
-        //     res.writeHead(403, { "Content-Type": "application/json" });
-        //     return res.end(JSON.stringify({ message: "You are not allowed to edit to this comment" }));
-        // }
-
 
 
         if (isReply) {
@@ -770,6 +763,13 @@ function editCommentOrReply(req, res) {
 
 //  Delete a comment or reply
 function deleteCommentOrReply(req, res) {
+
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
     const commentId = parseInt(urlParts[5]);
@@ -785,12 +785,32 @@ function deleteCommentOrReply(req, res) {
 
     if (isReply) {
         const replyIndex = comment.replies.findIndex(r => r.id === replyId);
+
         if (replyIndex === -1) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
+
+        const reply = comment.replies.find(r => r.id === replyId);
+        if (!reply) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Reply not found" }));
+        }
+
+        if (reply.user !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "You are not allowed to delete this reply" }));
+        }
+
         comment.replies.splice(replyIndex, 1);
+
         fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
         res.writeHead(204, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Reply deleted!" }));
     } else {
+        if (comment.user !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "You are not allowed to delete this comment" }));
+        }
+
         const commentIndex = article.comments.findIndex(c => c.id === commentId);
         article.comments.splice(commentIndex, 1);
         fs.writeFileSync(file, JSON.stringify(data, null, 2));
@@ -802,30 +822,4 @@ function deleteCommentOrReply(req, res) {
 
 
 
-//  Unlike an article
-function unlikeArticle(req, res) {
-    const id = parseInt(req.url.split("/")[3]);
-
-    const data = JSON.parse(fs.readFileSync(file, "utf8"));
-    const article = data.find(a => a.id === id);
-
-    if (!article) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Article not found" }));
-    }
-
-    if (article.likes > 0) {
-        article.likes -= 1;
-    }
-
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Article unliked successfully", likes: article.likes }));
-}
-
-
-
-
-
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, unlikeArticle, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
