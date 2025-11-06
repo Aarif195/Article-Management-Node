@@ -22,9 +22,6 @@ function generateFileName(originalName) {
     return `${base}-${timestamp}${ext}`;
 }
 
-
-
-
 // GET
 function getArticles(req, res) {
     fs.readFile(file, "utf8", (err, data) => {
@@ -116,7 +113,6 @@ function getArticles(req, res) {
         res.end(JSON.stringify(response));
     });
 }
-
 
 
 // Allowed categories, tags, and status
@@ -465,7 +461,12 @@ function postComment(req, res) {
     });
 
     req.on("end", () => {
-        const { user, text } = JSON.parse(body);
+        const { text } = JSON.parse(body);
+
+          if (!text || text.trim() === "") {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Comment text is required" }));
+        }
 
         const data = JSON.parse(fs.readFileSync(file, "utf8"));
         const article = data.find(a => a.id === id);
@@ -477,11 +478,16 @@ function postComment(req, res) {
 
         const comment = {
             id: Date.now(),
-            user,
+            user:user.username,
             text,
             date: new Date().toISOString(),
             replies: []
         };
+
+        if (!Array.isArray(article.comments)) {
+            article.comments = [];
+        }
+
 
         article.comments.push(comment);
         fs.writeFileSync(file, JSON.stringify(data, null, 2));
@@ -555,6 +561,9 @@ function replyComment(req, res) {
 
 // like/unlike a comment
 function likeComment(req, res) {
+
+
+
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
     const commentId = parseInt(urlParts[5]);

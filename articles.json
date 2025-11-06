@@ -336,6 +336,20 @@
         "text": "Interesting Subject",
         "date": "2025-11-05T15:35:59.455Z",
         "replies": []
+      },
+      {
+        "id": 1762422530438,
+        "user": "NNN",
+        "text": "Interesting Subject",
+        "date": "2025-11-06T09:48:50.438Z",
+        "replies": [],
+        "liked": true
+      },
+      {
+        "id": 1762422948271,
+        "text": "Interesting Subject",
+        "date": "2025-11-06T09:55:48.271Z",
+        "replies": []
       }
     ],
     "createdAt": "2025-11-05T07:36:23.929Z",
@@ -546,23 +560,6 @@
     "updatedAt": "2025-11-05T09:07:01.558Z"
   },
   {
-    "id": 44,
-    "title": "Deep Dive into Backend",
-    "content": "Understanding readable, writable, and transform streams in Node.js.",
-    "author": "Test Gmail",
-    "category": "Design",
-    "status": "draft",
-    "tags": [
-      "frontend",
-      "backend"
-    ],
-    "image": "https://unsplash.com/800x600/?Design",
-    "likes": 0,
-    "comments": [],
-    "createdAt": "2025-11-05T09:07:02.885Z",
-    "updatedAt": "2025-11-05T09:07:02.885Z"
-  },
-  {
     "id": 45,
     "title": "My new blog post",
     "content": "This is the content",
@@ -643,8 +640,40 @@
     ],
     "image": "/uploads/luis-villasmil-1HzaqbBpxBs-unsplash-1762354603389.jpg",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762424166997,
+        "user": "Test Gmail",
+        "text": "Interesting Subject",
+        "date": "2025-11-06T10:16:06.997Z",
+        "replies": []
+      },
+      {
+        "id": 1762424220446,
+        "user": "Test Gmail",
+        "text": "I am good",
+        "date": "2025-11-06T10:17:00.446Z",
+        "replies": []
+      }
+    ],
     "createdAt": "2025-11-05T14:56:43.392Z",
     "updatedAt": "2025-11-05T14:56:43.392Z"
+  },
+  {
+    "id": 50,
+    "title": "My new blog post",
+    "content": "This is the content",
+    "author": "Test Gmail",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend",
+      "backend"
+    ],
+    "image": "/uploads/luis-villasmil-1HzaqbBpxBs-unsplash-1762421832643.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-06T09:37:12.648Z",
+    "updatedAt": "2025-11-06T09:37:12.649Z"
   }
 ]
