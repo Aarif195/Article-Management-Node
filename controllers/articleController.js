@@ -463,7 +463,7 @@ function postComment(req, res) {
     req.on("end", () => {
         const { text } = JSON.parse(body);
 
-          if (!text || text.trim() === "") {
+        if (!text || text.trim() === "") {
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "Comment text is required" }));
         }
@@ -478,7 +478,7 @@ function postComment(req, res) {
 
         const comment = {
             id: Date.now(),
-            user:user.username,
+            user: user.username,
             text,
             date: new Date().toISOString(),
             replies: []
@@ -514,6 +514,14 @@ function getComments(req, res) {
 
 // reply comment
 function replyComment(req, res) {
+
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
+
     const parts = req.url.split("/");
     const articleId = parseInt(parts[3]);
     const commentId = parseInt(parts[5]);
@@ -524,8 +532,13 @@ function replyComment(req, res) {
     });
 
     req.on("end", () => {
-        const { user, text } = JSON.parse(body);
 
+        const { text } = JSON.parse(body);
+
+        if (!text || text.trim() === "") {
+            res.writeHead(400, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Reply text is required" }));
+        }
         const data = JSON.parse(fs.readFileSync(file, "utf8"));
         const article = data.find(a => a.id === articleId);
 
@@ -543,10 +556,16 @@ function replyComment(req, res) {
 
         const reply = {
             id: Date.now(),
-            user,
+            user: user.username,
             text,
             date: new Date().toISOString()
         };
+
+        if (comment.user !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "You are not allowed to reply to this comment" }));
+        }
+
 
         comment.replies = comment.replies || [];
         comment.replies.push(reply);
