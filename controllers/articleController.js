@@ -581,7 +581,11 @@ function replyComment(req, res) {
 // like/unlike a comment
 function likeComment(req, res) {
 
-
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
 
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
@@ -613,6 +617,11 @@ function likeComment(req, res) {
         message = "Comment liked!";
     }
 
+    if (comment.user !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "You are not allowed to like to this comment" }));
+    }
+
     fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
     res.writeHead(200, { "Content-Type": "application/json" });
@@ -621,6 +630,8 @@ function likeComment(req, res) {
 
 // like/unlike a reply
 function likeReply(req, res) {
+
+
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
     const commentId = parseInt(urlParts[5]);

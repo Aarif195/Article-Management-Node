@@ -646,7 +646,8 @@
         "user": "Test Gmail",
         "text": "Interesting Subject",
         "date": "2025-11-06T10:16:06.997Z",
-        "replies": []
+        "replies": [],
+        "liked": true
       },
       {
         "id": 1762424220446,
