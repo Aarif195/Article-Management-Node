@@ -1152,5 +1152,39 @@
     "comments": [],
     "createdAt": "2025-11-06T17:23:10.291Z",
     "updatedAt": "2025-11-06T17:23:10.291Z"
+  },
+  {
+    "id": 76,
+    "title": "My new blog post",
+    "content": "This is the content",
+    "author": "monday",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend",
+      "backend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762452739192.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-06T18:12:19.198Z",
+    "updatedAt": "2025-11-06T18:12:19.198Z"
+  },
+  {
+    "id": 77,
+    "title": "My new blog post",
+    "content": "This is the content",
+    "author": "Samuel Ola",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend",
+      "backend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762455053181.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-06T18:50:53.185Z",
+    "updatedAt": "2025-11-06T18:50:53.185Z"
   }
 ]

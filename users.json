@@ -22,16 +22,9 @@
   },
   {
     "id": 8,
-    "username": "Sunday",
-    "email": "sunday@example.com",
-    "password": "54b688a517f7654563a6c64d945a3670880a4c602ec67a065bbebbcd2b22edd5",
-    "token": null
-  },
-  {
-    "id": 9,
-    "username": "monday",
-    "email": "monday@example.com",
-    "password": "8b496bd539987baef7a52f84d40c70be867c040d4a619fa0ffbadbda1522bc27",
-    "token": "0489c08bb5b23c8ba415190b8535e67e5b5cf279ea6c1d98"
+    "username": "Samuel Ola",
+    "email": "oladoe@example.com",
+    "password": "723b0877fbefcca70f01821f5f6f34b8ce71fb0fb6249833671142a44d1eb1ca",
+    "token": "6b8a64f2136fec83f7b730e941cd85713b2cd7f9f1af3a42"
   }
 ]
