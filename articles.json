@@ -627,17 +627,19 @@
       {
         "id": 1762428554705,
         "user": "Test Gmail",
-        "text": "true true true",
+        "text": "comment edited",
         "date": "2025-11-06T11:29:14.705Z",
         "replies": [
           {
             "id": 1762428591929,
             "user": "Test Gmail",
-            "text": "nice nice",
+            "text": "Updated ",
             "date": "2025-11-06T11:29:51.929Z",
-            "liked": false
+            "liked": false,
+            "updatedAt": "2025-11-06T12:47:45.149Z"
           }
-        ]
+        ],
+        "updatedAt": "2025-11-06T12:45:56.996Z"
       }
     ],
     "createdAt": "2025-11-05T14:09:49.816Z",

@@ -694,6 +694,13 @@ function likeReply(req, res) {
 
 //  Edit a comment or reply
 function editCommentOrReply(req, res) {
+
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const urlParts = req.url.split("/");
     const articleId = parseInt(urlParts[3]);
     const commentId = parseInt(urlParts[5]);
@@ -714,17 +721,44 @@ function editCommentOrReply(req, res) {
         if (!article) return res.writeHead(404).end(JSON.stringify({ message: "Article not found" }));
 
         const comment = article.comments.find(c => c.id === commentId);
+
         if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
+
+        // if (comment.user !== user.username) {
+        //     res.writeHead(403, { "Content-Type": "application/json" });
+        //     return res.end(JSON.stringify({ message: "You are not allowed to edit to this comment" }));
+        // }
+
+
 
         if (isReply) {
             const reply = comment.replies.find(r => r.id === replyId);
+
             if (!reply) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
+
+
+            if (reply.user !== user.username) {
+                res.writeHead(403, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "You are not allowed to edit this reply" }));
+            }
+
             reply.text = text;
+
             reply.updatedAt = new Date().toISOString();
+
             fs.writeFileSync(file, JSON.stringify(data, null, 2));
+
             res.writeHead(200, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "Reply updated!", reply }));
-        } else {
+
+
+        }
+
+        if (comment.user !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
+        }
+        else {
             comment.text = text;
             comment.updatedAt = new Date().toISOString();
             fs.writeFileSync(file, JSON.stringify(data, null, 2));
