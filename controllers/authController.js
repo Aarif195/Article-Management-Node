@@ -2,6 +2,7 @@ const fs = require("fs");
 const path = require("path");
 const crypto = require("crypto");
 
+
 const file = path.join(__dirname, "../users.json");
 
 function readUsers() {
@@ -13,8 +14,6 @@ function readUsers() {
 function writeUsers(users) {
     fs.writeFileSync(file, JSON.stringify(users, null, 2));
 }
-
-
 
 // Helper to hash password (simple, not real bcrypt)
 function hashPassword(password) {
@@ -162,40 +161,30 @@ function login(req, res) {
 
 
 // DELETE USER
+// DELETE USER (private, token only)
 function deleteUser(req, res) {
-    // Authenticate user first
+    // Authenticate user from token
     const user = authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
-    // Get user ID from URL
-    const id = parseInt(req.url.split("/")[3]);
-    if (!id) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Invalid user ID" }));
-    }
-
     const users = readUsers();
-    const index = users.findIndex(u => u.id === id);
+    const index = users.findIndex(u => u.id === user.id);
 
     if (index === -1) {
         res.writeHead(404, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "User not found" }));
     }
 
-    if (users[index].id !== user.id) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own account" }));
-    }
-
     const deletedUser = users.splice(index, 1);
     writeUsers(users);
 
-    res.writeHead(204, { "Content-Type": "application/json" });
+    res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ message: "User deleted successfully", deletedUser }));
 }
+
 
 // Test@1234
 

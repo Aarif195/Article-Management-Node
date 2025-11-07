@@ -1227,5 +1227,23 @@
     "createdAt": "2025-11-07T07:26:32.624Z",
     "updatedAt": "2025-11-07T07:26:58.010Z",
     "liked": false
+  },
+  {
+    "id": 79,
+    "title": "Updated: Node.js Streams Explained",
+    "content": "Detailed guide on streams, buffers, and performance in Node.js.",
+    "author": "Obi",
+    "category": "Programming",
+    "status": "published",
+    "tags": [
+      "node",
+      "backend",
+      "api"
+    ],
+    "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T08:42:48.665Z",
+    "updatedAt": "2025-11-07T08:44:21.409Z"
   }
 ]
