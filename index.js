@@ -2,7 +2,7 @@ const http = require('http');
 // const fs = require("fs");
 const PORT = process.env.PORT || 8000;
 
-const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply } = require('./controllers/articleController');
+const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply, getMyArticles } = require('./controllers/articleController');
 
 const { register, login } = require("./controllers/authController");
 
@@ -20,10 +20,15 @@ const server = http.createServer((req, res) => {
         return login(req, res);
     }
 
-     // GET article by ID
+    else if (req.url === "/api/users/my-articles" && req.method === "GET") {
+        getMyArticles(req, res);
+    }
+
+    // GET article by ID
     if (req.url.startsWith("/api/articles/") && req.method === "GET") {
         return getArticleById(req, res);
     }
+
 
     // GET
     //  Combined route: handles both pagination and filtering
@@ -142,17 +147,16 @@ const server = http.createServer((req, res) => {
         return replyComment(req, res);
     }
 
-
-
     // Delete user
     else if (req.url.startsWith("/api/users/") && req.method === "DELETE") {
         return require('./controllers/authController').deleteUser(req, res);
     }
 
+    else if (req.url === "/api/articles/my-articles" && req.method === "GET") {
+        getMyArticles(req, res);
+    }
 
 })
-
-
 
 
 server.listen(PORT, () => {

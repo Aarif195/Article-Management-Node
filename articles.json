@@ -1065,7 +1065,30 @@
     ],
     "image": "/uploads/FB_IMG_16443417783723952-1762448411544.jpg",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762509769636,
+        "user": "Test Delete",
+        "text": "yesyyyyyyyyyyyess",
+        "date": "2025-11-07T10:02:49.636Z",
+        "replies": []
+      },
+      {
+        "id": 1762509866781,
+        "user": "Test Delete",
+        "text": "yesyyyyyyyyyyyess",
+        "date": "2025-11-07T10:04:26.781Z",
+        "replies": [
+          {
+            "id": 1762509905247,
+            "user": "Test Delete",
+            "text": "Nonnnnnooooooo",
+            "date": "2025-11-07T10:05:05.247Z",
+            "updatedAt": "2025-11-07T10:09:44.093Z"
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-06T17:00:11.548Z",
     "updatedAt": "2025-11-06T17:00:11.549Z"
   },
@@ -1316,5 +1339,117 @@
     ],
     "createdAt": "2025-11-07T08:42:48.665Z",
     "updatedAt": "2025-11-07T08:44:21.409Z"
+  },
+  {
+    "id": 80,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762512752136.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T10:52:32.142Z",
+    "updatedAt": "2025-11-07T10:52:32.143Z"
+  },
+  {
+    "id": 81,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762512820568.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T10:53:40.574Z",
+    "updatedAt": "2025-11-07T10:53:40.574Z"
+  },
+  {
+    "id": 82,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762512822230.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T10:53:42.235Z",
+    "updatedAt": "2025-11-07T10:53:42.235Z"
+  },
+  {
+    "id": 83,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762512823514.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T10:53:43.518Z",
+    "updatedAt": "2025-11-07T10:53:43.519Z"
+  },
+  {
+    "id": 84,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762512957680.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T10:55:57.684Z",
+    "updatedAt": "2025-11-07T10:55:57.684Z"
+  },
+  {
+    "id": 85,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762513634216.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T11:07:14.221Z",
+    "updatedAt": "2025-11-07T11:07:14.221Z"
+  },
+  {
+    "id": 86,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762513765933.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T11:09:25.937Z",
+    "updatedAt": "2025-11-07T11:09:25.937Z"
   }
 ]

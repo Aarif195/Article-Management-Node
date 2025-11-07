@@ -837,7 +837,26 @@ function deleteCommentOrReply(req, res) {
     }
 }
 
+//  Get articles created by the logged-in user
+function getMyArticles(req, res) {
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
+    const data = fs.readFileSync(file, "utf8");
+    const articles = JSON.parse(data);
+
+    const userArticles = articles
+        .filter(article => article.author === user.username)
+        .sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+
+    res.writeHead(200, { "Content-Type": "application/json" });
+    res.end(JSON.stringify(userArticles));
+}
 
 
-
-module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply };
+module.exports = { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply, getMyArticles };

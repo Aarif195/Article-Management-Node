@@ -158,8 +158,6 @@ function login(req, res) {
 }
 
 
-
-
 // DELETE USER
 // DELETE USER (private, token only)
 function deleteUser(req, res) {
