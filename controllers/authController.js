@@ -172,6 +172,10 @@ function deleteUser(req, res) {
 
     // Get user ID from URL
     const id = parseInt(req.url.split("/")[3]);
+    if (!id) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Invalid user ID" }));
+    }
 
     const users = readUsers();
     const index = users.findIndex(u => u.id === id);

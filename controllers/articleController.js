@@ -124,7 +124,7 @@ const allowedTags = ["api", "node", "frontend", "backend"];
 function createArticle(req, res) {
     // Authenticate user first
     const user = authController.authenticate(req);
-    
+
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -748,11 +748,12 @@ function editCommentOrReply(req, res) {
 
         }
 
-        if (comment.user !== user.username) {
-            res.writeHead(403, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
-        }
         else {
+            if (comment.user !== user.username) {
+                res.writeHead(403, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
+            }
+
             comment.text = text;
             comment.updatedAt = new Date().toISOString();
             fs.writeFileSync(file, JSON.stringify(data, null, 2));

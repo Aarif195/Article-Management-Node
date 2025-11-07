@@ -25,6 +25,13 @@
     "username": "Samuel Ola",
     "email": "oladoe@example.com",
     "password": "723b0877fbefcca70f01821f5f6f34b8ce71fb0fb6249833671142a44d1eb1ca",
-    "token": "6b8a64f2136fec83f7b730e941cd85713b2cd7f9f1af3a42"
+    "token": null
+  },
+  {
+    "id": 9,
+    "username": "Obi",
+    "email": "obi@example.com",
+    "password": "a5e91f85ea77a939b1509f66299fe46e06c75999d002a0a208afd8cb1a38ae3e",
+    "token": "8d24919f004e0f335bc9fcf55a28a8f305b450a686833a11"
   }
 ]

@@ -1149,7 +1149,28 @@
     ],
     "image": "/uploads/FB_IMG_16443417783723952-1762449790282.jpg",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762499251986,
+        "user": "Obi",
+        "text": "good good like",
+        "date": "2025-11-07T07:07:31.986Z",
+        "replies": [
+          {
+            "id": 1762499436452,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T07:10:36.452Z"
+          },
+          {
+            "id": 1762499476663,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T07:11:16.663Z"
+          }
+        ]
+      }
+    ],
     "createdAt": "2025-11-06T17:23:10.291Z",
     "updatedAt": "2025-11-06T17:23:10.291Z"
   },
