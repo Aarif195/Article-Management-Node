@@ -1451,5 +1451,21 @@
     "comments": [],
     "createdAt": "2025-11-07T11:09:25.937Z",
     "updatedAt": "2025-11-07T11:09:25.937Z"
+  },
+  {
+    "id": 87,
+    "title": "My new blog post Deleted",
+    "content": "This is the content",
+    "author": "Test Delete",
+    "category": "Design",
+    "status": "draft",
+    "tags": [
+      "frontend"
+    ],
+    "image": "/uploads/FB_IMG_16443417783723952-1762529104017.jpg",
+    "likes": 0,
+    "comments": [],
+    "createdAt": "2025-11-07T15:25:04.022Z",
+    "updatedAt": "2025-11-07T15:25:04.023Z"
   }
 ]
