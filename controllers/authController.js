@@ -182,7 +182,9 @@ function deleteUser(req, res) {
     writeUsers(users);
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "User deleted successfully", deletedUser }));
+    res.end(JSON.stringify({ message: "User deleted successfully", deletedUser:{
+        username: user.username, email: user.email
+    } }));
 }
 
 

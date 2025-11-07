@@ -1242,7 +1242,78 @@
     ],
     "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
     "likes": 0,
-    "comments": [],
+    "comments": [
+      {
+        "id": 1762505724370,
+        "user": "Obi",
+        "text": "good good like",
+        "date": "2025-11-07T08:55:24.370Z",
+        "replies": [
+          {
+            "id": 1762505779302,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T08:56:19.302Z"
+          }
+        ]
+      },
+      {
+        "id": 1762505927282,
+        "user": "Obi",
+        "text": "good good like",
+        "date": "2025-11-07T08:58:47.282Z",
+        "replies": []
+      },
+      {
+        "id": 1762505928646,
+        "user": "Obi",
+        "text": "good good like",
+        "date": "2025-11-07T08:58:48.646Z",
+        "replies": []
+      },
+      {
+        "id": 1762505930045,
+        "user": "Obi",
+        "text": "good good like",
+        "date": "2025-11-07T08:58:50.045Z",
+        "replies": [
+          {
+            "id": 1762506040999,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T09:00:40.999Z"
+          },
+          {
+            "id": 1762506042574,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T09:00:42.574Z"
+          },
+          {
+            "id": 1762506044046,
+            "user": "Obi",
+            "text": "yes, yes, it worth it",
+            "date": "2025-11-07T09:00:44.046Z"
+          }
+        ],
+        "liked": false
+      },
+      {
+        "id": 1762506656518,
+        "user": "Obi",
+        "text": "like",
+        "date": "2025-11-07T09:10:56.518Z",
+        "replies": [],
+        "liked": true
+      },
+      {
+        "id": 1762507882985,
+        "user": "Test Delete",
+        "text": "like",
+        "date": "2025-11-07T09:31:22.985Z",
+        "replies": []
+      }
+    ],
     "createdAt": "2025-11-07T08:42:48.665Z",
     "updatedAt": "2025-11-07T08:44:21.409Z"
   }
