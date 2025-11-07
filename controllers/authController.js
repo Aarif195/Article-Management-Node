@@ -134,7 +134,7 @@ function login(req, res) {
 
         if (!user) {
             res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "User not found" }));
+            return res.end(JSON.stringify({ message: "Invalid credentials" }));
         }
 
         // Generate a new token for current login
