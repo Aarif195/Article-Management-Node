@@ -1168,7 +1168,8 @@
             "text": "yes, yes, it worth it",
             "date": "2025-11-07T07:11:16.663Z"
           }
-        ]
+        ],
+        "liked": true
       }
     ],
     "createdAt": "2025-11-06T17:23:10.291Z",
@@ -1207,5 +1208,24 @@
     "comments": [],
     "createdAt": "2025-11-06T18:50:53.185Z",
     "updatedAt": "2025-11-06T18:50:53.185Z"
+  },
+  {
+    "id": 78,
+    "title": "Updated: Node.js Streams Explained",
+    "content": "Detailed guide on streams, buffers, and performance in Node.js.",
+    "author": "Obi",
+    "category": "Programming",
+    "status": "published",
+    "tags": [
+      "node",
+      "backend",
+      "api"
+    ],
+    "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
+    "likes": 1,
+    "comments": [],
+    "createdAt": "2025-11-07T07:26:32.624Z",
+    "updatedAt": "2025-11-07T07:26:58.010Z",
+    "liked": true
   }
 ]

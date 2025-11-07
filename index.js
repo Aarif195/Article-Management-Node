@@ -121,8 +121,6 @@ const server = http.createServer((req, res) => {
         return deleteArticle(req, res);
     }
 
-
-
     // Like Article
     else if (req.url.startsWith("/api/articles/") && req.url.endsWith("/like") && req.method === "POST") {
         console.log(req.url.split("/"));

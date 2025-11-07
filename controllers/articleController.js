@@ -412,6 +412,13 @@ function filterArticles(req, res) {
 
 // Like Article
 function likeArticle(req, res) {
+
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
     const id = parseInt(req.url.split("/")[3]);
     const data = fs.readFileSync(file, "utf8");
     const articles = JSON.parse(data);
@@ -425,7 +432,12 @@ function likeArticle(req, res) {
     // articles[index].likes += 1;
 
     if (typeof articles[index].liked === "undefined") {
-        articles[index].liked = false;
+        articles[index].liked = false;;
+    }
+
+    if (articles[index].author !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "You are not allowed to like this article" }));
     }
 
     // Toggle like
@@ -438,6 +450,8 @@ function likeArticle(req, res) {
         articles[index].liked = true;
         message = "Article liked!";
     }
+
+
 
     fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 
@@ -609,6 +623,11 @@ function likeComment(req, res) {
     // Initialize liked if not present
     if (typeof comment.liked === "undefined") comment.liked = false;
 
+    if (comment.user !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "You are not allowed to like to this comment" }));
+    }
+
     let message;
     if (comment.liked) {
         comment.liked = false;
@@ -618,10 +637,7 @@ function likeComment(req, res) {
         message = "Comment liked!";
     }
 
-    if (comment.user !== user.username) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "You are not allowed to like to this comment" }));
-    }
+
 
     fs.writeFileSync(file, JSON.stringify(data, null, 2));
 
