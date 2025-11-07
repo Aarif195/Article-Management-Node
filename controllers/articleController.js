@@ -456,7 +456,7 @@ function likeArticle(req, res) {
     fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 
     res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Article liked!", article: articles[index] }));
+    res.end(JSON.stringify({ message: message, article: articles[index] }));
 }
 
 // post comment

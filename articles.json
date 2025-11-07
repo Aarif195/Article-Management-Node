@@ -1222,10 +1222,10 @@
       "api"
     ],
     "image": "https://images.unsplash.com/photo-1682685790657-0a5d9e6f7f7a",
-    "likes": 1,
+    "likes": 0,
     "comments": [],
     "createdAt": "2025-11-07T07:26:32.624Z",
     "updatedAt": "2025-11-07T07:26:58.010Z",
-    "liked": true
+    "liked": false
   }
 ]
