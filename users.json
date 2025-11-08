@@ -39,6 +39,20 @@
     "username": "Test Delete",
     "email": "test@delete.com",
     "password": "8776f108e247ab1e2b323042c049c266407c81fbad41bde1e8dfc1bb66fd267e",
-    "token": "5e27ee775a548c4b973baa4e1ab841fda7b0c68ab3a0aa85"
+    "token": null
+  },
+  {
+    "id": 11,
+    "username": "testuser",
+    "email": "test@example.com",
+    "password": "849f1575ccfbf3a4d6cf00e6c5641b7fd4da2ed3e212c2d79ba9161a5a432ff0",
+    "token": null
+  },
+  {
+    "id": 12,
+    "username": "adeoluboy",
+    "email": "adeolu@example.com",
+    "password": "2c07e0c8469050b010957886d998168715a27e356e896209da465cb074fef913",
+    "token": "36db4fee1dd8a087754da1039a2c551d89c54ed50016306c"
   }
 ]
