@@ -771,11 +771,9 @@ async function likeComment(req, res) {
     }
 }
 
-
 // like/unlike a reply
-function likeReply(req, res) {
-
-    const user = authController.authenticate(req);
+async function likeReply(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -786,53 +784,70 @@ function likeReply(req, res) {
     const commentId = parseInt(urlParts[5]);
     const replyId = parseInt(urlParts[7]);
 
-    const data = JSON.parse(fs.readFileSync(file, "utf8"));
-    const article = data.find(a => a.id === articleId);
-    if (!article) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Article not found" }));
+    try {
+        // Fetch article
+        const articleResult = await pool.query(
+            `SELECT * FROM articles WHERE id = $1`,
+            [articleId]
+        );
+        const article = articleResult.rows[0];
+
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
+
+        // STRICT PRIVATE: only article owner can act
+        if (article.author !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Forbidden: Only the article owner can like/unlike replies" }));
+        }
+
+        // Parse comments JSONB
+        const comments = article.comments || [];
+        const commentIndex = comments.findIndex(c => c.id === commentId);
+
+        if (commentIndex === -1) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Comment not found" }));
+        }
+
+        const replies = comments[commentIndex].replies || [];
+        const replyIndex = replies.findIndex(r => r.id === replyId);
+
+        if (replyIndex === -1) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Reply not found" }));
+        }
+
+        // Toggle like/unlike
+        if (typeof replies[replyIndex].liked === "undefined") replies[replyIndex].liked = false;
+
+        let message;
+        if (replies[replyIndex].liked) {
+            replies[replyIndex].liked = false;
+            message = "Reply unliked!";
+        } else {
+            replies[replyIndex].liked = true;
+            message = "Reply liked!";
+        }
+
+        // Update the reply back into comments
+        comments[commentIndex].replies = replies;
+
+        // Update article in Postgres
+        await pool.query(
+            `UPDATE articles SET comments = $1 WHERE id = $2`,
+            [JSON.stringify(comments), articleId]
+        );
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message, reply: replies[replyIndex] }));
+    } catch (err) {
+        console.error(err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Server error" }));
     }
-
-    const comment = article.comments.find(c => c.id === commentId);
-    if (!comment) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Comment not found" }));
-    }
-
-    const reply = comment.replies.find(r => r.id === replyId);
-    if (!reply) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Reply not found" }));
-    }
-
-    console.log("Reply user:", reply.user);
-    console.log("Token user:", user.username);
-
-
-    if (reply.user !== user.username) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "You are not allowed to like to this reply" }));
-    }
-
-
-    // Initialize liked if not present
-    if (typeof reply.liked === "undefined") reply.liked = false;
-
-    let message;
-    if (reply.liked) {
-        reply.liked = false;
-        message = "Reply unliked!";
-    } else {
-        reply.liked = true;
-        message = "Reply liked!";
-    }
-
-
-
-    fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message, reply }));
 }
 
 //  Edit a comment or reply
