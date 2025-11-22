@@ -509,10 +509,10 @@ async function likeArticle(req, res) {
     }
 }
 
-// post comment
-function postComment(req, res) {
-
-    const user = authController.authenticate(req);
+// add comment
+async function postComment(req, res) {
+    const user = await authController.authenticate(req);
+    console.log(user);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -525,7 +525,7 @@ function postComment(req, res) {
         body += chunk.toString();
     });
 
-    req.on("end", () => {
+    req.on("end", async () => {
         const { text } = JSON.parse(body);
 
         if (!text || text.trim() === "") {
@@ -533,35 +533,52 @@ function postComment(req, res) {
             return res.end(JSON.stringify({ message: "Comment text is required" }));
         }
 
-        const data = JSON.parse(fs.readFileSync(file, "utf8"));
-        const article = data.find(a => a.id === id);
+        try {
+            // Get article from PostgreSQL
+            const { rows } = await pool.query("SELECT * FROM articles WHERE id = $1", [id]);
+            const article = rows[0];
 
-        if (!article) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Article not found" }));
+
+            if (!article) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Article not found" }));
+            }
+
+
+            // PRIVATE: Only article author can have comments added
+            const articleAuthor = (article.author || "").trim().toLowerCase();
+            const tokenUser = (user.username || "").trim().toLowerCase();
+
+            if (articleAuthor !== tokenUser) {
+                res.writeHead(403, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "You can only comment on your own article" }));
+            }
+
+
+            const newComment = {
+                id: Date.now(),
+                user: user.username,
+                text,
+                date: new Date().toISOString(),
+                replies: []
+            };
+
+            const updatedComments = article.comments ? [...article.comments, newComment] : [newComment];
+
+            await pool.query(
+                "UPDATE articles SET comments = $1 WHERE id = $2 RETURNING *",
+                [JSON.stringify(updatedComments), id]
+            );
+
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(newComment));
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Internal server error" }));
         }
-
-        const comment = {
-            id: Date.now(),
-            user: user.username,
-            text,
-            date: new Date().toISOString(),
-            replies: []
-        };
-
-        if (!Array.isArray(article.comments)) {
-            article.comments = [];
-        }
-
-
-        article.comments.push(comment);
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(comment));
     });
 }
-
 // get comment
 function getComments(req, res) {
     const id = parseInt(req.url.split("/")[3]);
