@@ -865,24 +865,64 @@ function deleteCommentOrReply(req, res) {
 }
 
 //  Get articles created by the logged-in user
-function getMyArticles(req, res) {
-    const user = authController.authenticate(req);
+async function getMyArticles(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
-    const data = fs.readFileSync(file, "utf8");
-    const articles = JSON.parse(data);
+    try {
+        const fullUrl = new URL(req.url, `http://${req.headers.host}`);
+        const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
+        const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
 
-    const userArticles = articles
-        .filter(article => article.author === user.username)
-        .sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        // Filters
+        const filters = Object.fromEntries(fullUrl.searchParams.entries());
+        const values = [user.username];
+        let filterQuery = "WHERE author = $1";
+
+        for (const key in filters) {
+            const value = filters[key].toLowerCase();
+            if (key === "category" && allowedCategories.map(c => c.toLowerCase()).includes(value)) {
+                values.push(value);
+                filterQuery += ` AND LOWER(category) = $${values.length}`;
+            } else if (key === "status" && allowedStatuses.map(s => s.toLowerCase()).includes(value)) {
+                values.push(value);
+                filterQuery += ` AND LOWER(status) = $${values.length}`;
+            } else if (key === "tags" && allowedTags.map(t => t.toLowerCase()).includes(value)) {
+                values.push(`%${value}%`);
+                filterQuery += ` AND tags::text ILIKE $${values.length}`;
+            } else if (key === "search") {
+                values.push(`%${value}%`, `%${value}%`);
+                filterQuery += ` AND (LOWER(title) ILIKE $${values.length - 1} OR LOWER(content) ILIKE $${values.length})`;
+            }
+        }
+
+        // Count total articles
+        const totalResult = await pool.query(`SELECT COUNT(*) FROM articles ${filterQuery}`, values);
+        const totalData = parseInt(totalResult.rows[0].count);
+        const totalPages = totalData === 0 ? 0 : Math.ceil(totalData / limit);
+
+        // Pagination
+        const offset = (page - 1) * limit;
+        const articlesResult = await pool.query(
+            `SELECT * FROM articles ${filterQuery} ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`,
+            [...values, limit, offset]
         );
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(userArticles));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
+            totalData,
+            totalPages,
+            currentPage: page,
+            limit,
+            data: articlesResult.rows
+        }));
+    } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal server error" }));
+    }
 }
 
 
