@@ -1,13 +1,13 @@
 const url = require("url");
 const fs = require("fs");
 const path = require("path");
-const authController = require('./authController');
+// const authController = require('./articleController');
+const { pool } = require("../db"); //  PostgreSQL pool from db.js
+const authController = require("./authController");
+const { authenticate } = require("./authController");
 
-// file path
-const file = "articles.json";
-if (!fs.existsSync(file)) {
-    fs.writeFileSync(file, "[]");
-}
+
+
 
 //  create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, "uploads");
@@ -15,12 +15,120 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir);
 }
 
+// helper for sending validation errors
+function sendError(res, msg) {
+    res.writeHead(400, { "Content-Type": "application/json" });
+    res.end(JSON.stringify({ error: msg }));
+}
+
+
 function generateFileName(originalName) {
     const timestamp = Date.now();
     const ext = path.extname(originalName);
     const base = path.basename(originalName, ext);
     return `${base}-${timestamp}${ext}`;
 }
+
+
+// Allowed categories, tags, and status
+const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
+const allowedStatuses = ["draft", "published", "achieve"];
+const allowedTags = ["api", "node", "frontend", "backend"];
+
+
+
+// CREATE ARTICLES
+async function createArticle(req, res) {
+    // Authenticate user first
+    const user = await authController.authenticate(req);
+    console.log("Creating article for user:", user.username);
+
+
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
+    }
+
+    // Check content type
+    const contentType = req.headers["content-type"] || "";
+    const isFormData = contentType.includes("multipart/form-data");
+
+    if (!isFormData) {
+        res.writeHead(400, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Content-Type must be multipart/form-data" }));
+    }
+
+    let data = Buffer.alloc(0);
+    req.on("data", chunk => (data = Buffer.concat([data, chunk])));
+    req.on("end", async () => {
+        try {
+            const boundary = "--" + contentType.split("boundary=")[1];
+            const parts = data.toString().split(boundary).filter(p => p.includes("Content-Disposition"));
+
+            let articleData = {};
+            let imagePath = null;
+
+            for (const part of parts) {
+                const nameMatch = part.match(/name="([^"]+)"/);
+                const fieldName = nameMatch && nameMatch[1];
+
+                if (part.includes("filename=")) {
+                    // handle file upload
+                    const filenameMatch = part.match(/filename="([^"]+)"/);
+                    const originalName = filenameMatch && filenameMatch[1];
+                    const fileData = part.split("\r\n\r\n")[1].split("\r\n--")[0];
+                    const buffer = Buffer.from(fileData, "binary");
+
+                    const savedName = generateFileName(originalName);
+                    const filePath = path.join(uploadsDir, savedName);
+                    fs.writeFileSync(filePath, buffer);
+
+                    imagePath = `/uploads/${savedName}`;
+                } else if (fieldName) {
+                    const value = part.split("\r\n\r\n")[1].split("\r\n--")[0].trim();
+                    try {
+                        articleData[fieldName] = JSON.parse(value);
+                    } catch {
+                        articleData[fieldName] = value;
+                    }
+                }
+            }
+
+            const { title, content, category, status, tags } = articleData;
+
+            //  VALIDATIONS 
+            if (!title?.trim()) return sendError(res, "Title is required.");
+            if (!content?.trim()) return sendError(res, "Content is required.");
+            if (!category?.trim()) return sendError(res, "Category is required.");
+            if (!allowedCategories.includes(category)) return sendError(res, "Invalid category provided.");
+            if (!status?.trim()) return sendError(res, "Status is required.");
+            if (!allowedStatuses.includes(status)) return sendError(res, "Invalid status provided.");
+            if (!tags || tags.length === 0) return sendError(res, "At least one tag is required.");
+            if (!tags.every(tag => allowedTags.includes(tag))) return sendError(res, "Invalid tag(s) provided.");
+            if (!imagePath) return sendError(res, "Image upload is required.");
+
+            // === Save new article in PostgreSQL ===
+            const result = await pool.query(
+                `INSERT INTO articles 
+                (title, content, author, category, status, tags, image, likes, comments, created_at, updated_at)
+                VALUES ($1,$2,$3,$4,$5,$6,$7,0,'[]',NOW(),NOW())
+                RETURNING *`,
+                [title, content, user.username, category, status, tags, imagePath]
+            );
+
+            const newArticle = result.rows[0];
+
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
+
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Server error" }));
+        }
+    });
+}
+
 
 // GET
 function getArticles(req, res) {
@@ -113,137 +221,6 @@ function getArticles(req, res) {
         res.end(JSON.stringify(response));
     });
 }
-
-
-// Allowed categories, tags, and status
-const allowedCategories = ["Programming", "Technology", "Design", "Web Developement"];
-const allowedStatuses = ["draft", "published", "achieve"];
-const allowedTags = ["api", "node", "frontend", "backend"];
-
-// POST
-function createArticle(req, res) {
-    // Authenticate user first
-    const user = authController.authenticate(req);
-
-    if (!user) {
-        res.writeHead(401, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Unauthorized" }));
-    }
-
-    // Check content type
-    const contentType = req.headers["content-type"] || "";
-    const isFormData = contentType.includes("multipart/form-data");
-
-    if (!isFormData) {
-        res.writeHead(400, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ error: "Content-Type must be multipart/form-data" }));
-    }
-
-    let data = Buffer.alloc(0);
-    req.on("data", chunk => (data = Buffer.concat([data, chunk])));
-    req.on("end", () => {
-        const boundary = "--" + contentType.split("boundary=")[1];
-        const parts = data.toString().split(boundary).filter(p => p.includes("Content-Disposition"));
-
-        let articleData = {};
-        let imagePath = null;
-
-        for (const part of parts) {
-            const nameMatch = part.match(/name="([^"]+)"/);
-            const fieldName = nameMatch && nameMatch[1];
-
-            if (part.includes("filename=")) {
-                // handle file upload
-                const filenameMatch = part.match(/filename="([^"]+)"/);
-                const originalName = filenameMatch && filenameMatch[1];
-                const fileData = part.split("\r\n\r\n")[1].split("\r\n--")[0];
-                const buffer = Buffer.from(fileData, "binary");
-
-                const savedName = generateFileName(originalName);
-                const filePath = path.join(uploadsDir, savedName);
-                fs.writeFileSync(filePath, buffer);
-
-                imagePath = `/uploads/${savedName}`;
-            } else if (fieldName) {
-                const value = part.split("\r\n\r\n")[1].split("\r\n--")[0].trim();
-                try {
-                    articleData[fieldName] = JSON.parse(value);
-                } catch {
-                    articleData[fieldName] = value;
-                }
-            }
-        }
-
-        const { title, content, category, status, tags } = articleData;
-
-        //  VALIDATIONS 
-        if (!title?.trim()) {
-            return sendError(res, "Title is required.");
-        }
-
-        if (!content?.trim()) {
-            return sendError(res, "Content is required.");
-        }
-
-        if (!category?.trim()) {
-            return sendError(res, "Category is required.");
-        }
-        if (!allowedCategories.includes(category)) {
-            return sendError(res, "Invalid category provided.");
-        }
-
-        if (!status?.trim()) {
-            return sendError(res, "Status is required.");
-        }
-        if (!allowedStatuses.includes(status)) {
-            return sendError(res, "Invalid status provided.");
-        }
-
-        if (!tags || tags.length === 0) {
-            return sendError(res, "At least one tag is required.");
-        }
-        if (!tags.every(tag => allowedTags.includes(tag))) {
-            return sendError(res, "Invalid tag(s) provided.");
-        }
-
-        if (!imagePath) {
-            return sendError(res, "Image upload is required.");
-        }
-
-
-        // === Save new article ===
-        const articles = JSON.parse(fs.readFileSync(file, "utf8"));
-
-        const newArticle = {
-            id: articles.length ? articles[articles.length - 1].id + 1 : 1,
-            title,
-            content,
-            author: user.username,
-            category,
-            status,
-            tags,
-            image: imagePath,
-            likes: 0,
-            comments: [],
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-        };
-
-        articles.push(newArticle);
-        fs.writeFileSync(file, JSON.stringify(articles, null, 2));
-
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "Article created successfully", article: newArticle }));
-    });
-}
-
-// helper for sending validation errors
-function sendError(res, msg) {
-    res.writeHead(400, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ error: msg }));
-}
-
-
 
 // GET article by ID
 function getArticleById(req, res) {
