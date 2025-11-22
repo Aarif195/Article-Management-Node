@@ -627,70 +627,82 @@ async function getComments(req, res) {
 }
 
 // reply comment
-function replyComment(req, res) {
-
-    const user = authController.authenticate(req);
+async function replyComment(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
-
     const parts = req.url.split("/");
     const articleId = parseInt(parts[3]);
     const commentId = parseInt(parts[5]);
+
     let body = "";
+    req.on("data", chunk => body += chunk.toString());
 
-    req.on("data", chunk => {
-        body += chunk.toString();
-    });
-
-    req.on("end", () => {
-
+    req.on("end", async () => {
         const { text } = JSON.parse(body);
 
         if (!text || text.trim() === "") {
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "Reply text is required" }));
         }
-        const data = JSON.parse(fs.readFileSync(file, "utf8"));
-        const article = data.find(a => a.id === articleId);
 
-        if (!article) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Article not found" }));
+        try {
+            // Fetch article from Postgres
+            const articleResult = await pool.query(
+                `SELECT * FROM articles WHERE id = $1`,
+                [articleId]
+            );
+            const article = articleResult.rows[0];
+
+            if (!article) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Article not found" }));
+            }
+
+            // STRICT PRIVATE: only article owner can act
+            if (article.author !== user.username) {
+                res.writeHead(403, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Forbidden: Only the article owner can perform this action" }));
+            }
+
+            // Parse comments JSONB
+            const comments = article.comments || [];
+            const commentIndex = comments.findIndex(c => c.id === commentId);
+
+            if (commentIndex === -1) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Comment not found" }));
+            }
+
+            // Create reply
+            const reply = {
+                id: Date.now(),
+                user: user.username,
+                text,
+                date: new Date().toISOString()
+            };
+
+            comments[commentIndex].replies = comments[commentIndex].replies || [];
+            comments[commentIndex].replies.push(reply);
+
+            // Update article in Postgres
+            await pool.query(
+                `UPDATE articles SET comments = $1 WHERE id = $2`,
+                [JSON.stringify(comments), articleId]
+            );
+
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify(reply));
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Server error" }));
         }
-
-        const comment = article.comments.find(c => c.id === commentId);
-
-        if (!comment) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Comment not found" }));
-        }
-
-        const reply = {
-            id: Date.now(),
-            user: user.username,
-            text,
-            date: new Date().toISOString()
-        };
-
-        if (comment.user !== user.username) {
-            res.writeHead(403, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "You are not allowed to reply to this comment" }));
-        }
-
-
-        comment.replies = comment.replies || [];
-        comment.replies.push(reply);
-
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(reply));
     });
 }
-
 
 // like/unlike a comment
 function likeComment(req, res) {
