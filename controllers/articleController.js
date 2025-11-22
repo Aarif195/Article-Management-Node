@@ -342,7 +342,7 @@ function deleteArticle(req, res) {
     const deleted = articles.splice(index, 1);
     fs.writeFileSync(file, JSON.stringify(articles, null, 2));
 
-    res.writeHead(204, { "Content-Type": "application/json" });
+    res.writeHead(204);
     res.end(JSON.stringify({ message: "Article deleted", deleted }));
 }
 
@@ -824,7 +824,7 @@ function deleteCommentOrReply(req, res) {
             return res.end(JSON.stringify({ message: "Reply not found" }));
         }
 
-        if (reply.user !== user.username) {
+        if (article.author !== user.username) {
             res.writeHead(403, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "You are not allowed to delete this reply" }));
         }
@@ -836,7 +836,7 @@ function deleteCommentOrReply(req, res) {
         res.writeHead(204, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Reply deleted!" }));
     } else {
-        if (comment.user !== user.username) {
+        if (article.author !== user.username) {
             res.writeHead(403, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "You are not allowed to delete this comment" }));
         }
