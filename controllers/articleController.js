@@ -209,24 +209,25 @@ async function getArticles(req, res) {
     }
 }
 
-
 // GET article by ID
-function getArticleById(req, res) {
+async function getArticleById(req, res) {
     const id = parseInt(req.url.split("/")[3]);
 
-    const data = fs.readFileSync(file, "utf8");
-    const articles = JSON.parse(data);
+    try {
+        const result = await pool.query("SELECT * FROM articles WHERE id = $1", [id]);
+        const article = result.rows[0];
 
-    const article = articles.find((a) => a.id === id);
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
 
-    if (!article) {
-        res.statusCode = 404;
-        res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify({ message: "Article not found" }));
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(article));
+    } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal server error" }));
     }
-
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(article));
 }
 
 // update
