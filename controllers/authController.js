@@ -1,6 +1,6 @@
 
 const bcrypt = require("bcrypt");
-const pool = require("../db"); //  PostgreSQL pool from db.js
+const { pool } = require("../db"); //  PostgreSQL pool from db.js
 const crypto = require("crypto");
 
 
