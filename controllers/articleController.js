@@ -694,7 +694,7 @@ function likeReply(req, res) {
     console.log("Token user:", user.username);
 
 
-    if (reply.user !== user.username) {
+    if (article.author ! !== user.username) {
         res.writeHead(403, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "You are not allowed to like to this reply" }));
     }
