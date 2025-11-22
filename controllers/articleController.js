@@ -7,8 +7,6 @@ const authController = require("./authController");
 const { authenticate } = require("./authController");
 
 
-
-
 //  create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, "uploads");
 if (!fs.existsSync(uploadsDir)) {
@@ -20,7 +18,6 @@ function sendError(res, msg) {
     res.writeHead(400, { "Content-Type": "application/json" });
     res.end(JSON.stringify({ error: msg }));
 }
-
 
 function generateFileName(originalName) {
     const timestamp = Date.now();
@@ -130,36 +127,19 @@ async function createArticle(req, res) {
 }
 
 
-// GET
-function getArticles(req, res) {
-    fs.readFile(file, "utf8", (err, data) => {
-        if (err) {
-            res.writeHead(500, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ error: "Internal server error" }));
-        }
-
-        let articles = [];
-        try {
-            articles = JSON.parse(data);
-            if (!Array.isArray(articles)) articles = [];
-        } catch (e) {
-            articles = [];
-        }
-
-        // newest first
-        const sortedArticles = articles.sort(
-            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
-        );
-
+// GET ALL ARTICLES
+async function getArticles(req, res) {
+    try {
         const fullUrl = new URL(req.url, `http://${req.headers.host}`);
         const page = Math.max(1, parseInt(fullUrl.searchParams.get("page")) || 1);
         const limit = Math.max(1, parseInt(fullUrl.searchParams.get("limit")) || 10);
+        const offset = (page - 1) * limit;
 
-        // --- VALIDATION FOR FILTERS ---
         const filters = Object.fromEntries(fullUrl.searchParams.entries());
+
+        // Validate filters
         for (const key in filters) {
             const value = filters[key].toLowerCase();
-
             if (!["page", "limit", "category", "status", "tags", "search"].includes(key)) {
                 res.writeHead(400, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ error: `Invalid query key: ${key}` }));
@@ -168,59 +148,67 @@ function getArticles(req, res) {
             if (key === "category" && !allowedCategories.map(c => c.toLowerCase()).includes(value)) {
                 return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
             }
-
             if (key === "status" && !allowedStatuses.map(s => s.toLowerCase()).includes(value)) {
                 return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
             }
-
             if (key === "tags" && !allowedTags.map(t => t.toLowerCase()).includes(value)) {
                 return res.end(JSON.stringify({ totalData: 0, totalPages: 0, currentPage: page, limit, data: [] }));
             }
         }
 
-        // Apply filtering (if any)
-        let filteredArticles = [...sortedArticles];
-        for (const key in filters) {
-            const value = filters[key].toLowerCase();
+        // Build SQL query
+        let query = `SELECT * FROM articles`;
+        const values = [];
+        const conditions = [];
 
-            if (key === "search") {
-                filteredArticles = filteredArticles.filter(a =>
-                    a.title.toLowerCase().includes(value) ||
-                    a.content.toLowerCase().includes(value) ||
-                    (Array.isArray(a.tags) && a.tags.some(tag => tag.toLowerCase().includes(value)))
-                );
-            } else if (key === "tags") {
-                filteredArticles = filteredArticles.filter(a =>
-                    Array.isArray(a.tags) &&
-                    a.tags.map(tag => tag.toLowerCase()).includes(value)
-                );
-            } else if (key === "category" || key === "status") {
-                filteredArticles = filteredArticles.filter(a =>
-                    a[key] && a[key].toString().toLowerCase() === value
-                );
-            }
+        if (filters.search) {
+            values.push(`%${filters.search}%`);
+            conditions.push(`(LOWER(title) LIKE $${values.length} OR LOWER(content) LIKE $${values.length})`);
+        }
+        if (filters.category) {
+            values.push(filters.category);
+            conditions.push(`LOWER(category) = LOWER($${values.length})`);
+        }
+        if (filters.status) {
+            values.push(filters.status);
+            conditions.push(`LOWER(status) = LOWER($${values.length})`);
+        }
+        if (filters.tags) {
+            values.push(filters.tags);
+            conditions.push(`$${values.length} = ANY(tags)`);
         }
 
-        const totalData = filteredArticles.length;
+        if (conditions.length > 0) {
+            query += ` WHERE ` + conditions.join(" AND ");
+        }
+
+        // Total count for pagination
+        const countResult = await pool.query(query.replace("*", "COUNT(*) AS total"), values);
+        const totalData = parseInt(countResult.rows[0].total, 10);
         const totalPages = totalData === 0 ? 0 : Math.ceil(totalData / limit);
 
-        const startIndex = (page - 1) * limit;
-        const endIndex = startIndex + limit;
+        // Apply sorting, limit, and offset
+        query += ` ORDER BY created_at DESC LIMIT $${values.length + 1} OFFSET $${values.length + 2}`;
+        values.push(limit, offset);
 
-        const dataSlice = startIndex < totalData ? filteredArticles.slice(startIndex, endIndex) : [];
+        const result = await pool.query(query, values);
+        const dataSlice = result.rows;
 
-        const response = {
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({
             totalData,
             totalPages,
             currentPage: page,
             limit,
-            data: dataSlice,
-        };
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(response));
-    });
+            data: dataSlice
+        }));
+    } catch (err) {
+        console.error(err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal server error" }));
+    }
 }
+
 
 // GET article by ID
 function getArticleById(req, res) {
