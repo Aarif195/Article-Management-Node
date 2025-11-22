@@ -579,19 +579,51 @@ async function postComment(req, res) {
         }
     });
 }
-// get comment
-function getComments(req, res) {
-    const id = parseInt(req.url.split("/")[3]);
-    const data = JSON.parse(fs.readFileSync(file, "utf8"));
-    const article = data.find(a => a.id === id);
 
-    if (!article) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Article not found" }));
+// get comments
+async function getComments(req, res) {
+    const user = authController.authenticate(req);
+    if (!user) {
+        res.writeHead(401, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(article.comments));
+    const id = parseInt(req.url.split("/")[3]);
+
+    try {
+        const { rows } = await pool.query("SELECT author, comments FROM articles WHERE id = $1", [id]);
+        const article = rows[0];
+
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
+        
+      
+        if (article.author !== user.username) {
+             res.writeHead(403, { "Content-Type": "application/json" });
+             return res.end(JSON.stringify({ message: "Forbidden: Access to comments is restricted to the article's author." }));
+        }
+
+      
+        const userComments = (article.comments || []).filter(c => c.user === user.username);
+        
+        
+        if (userComments.length === 0) {
+           
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Forbidden: You have not made any comments on this article." }));
+        }
+
+        // 5. Success: Return only the authenticated user's comments.
+        res.writeHead(200, { "Content-Type": "application/json" });
+        res.end(JSON.stringify(userComments)); 
+        
+    } catch (err) {
+        console.error(err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal server error" }));
+    }
 }
 
 // reply comment
