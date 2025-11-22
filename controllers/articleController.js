@@ -851,9 +851,8 @@ async function likeReply(req, res) {
 }
 
 //  Edit a comment or reply
-function editCommentOrReply(req, res) {
-
-    const user = authController.authenticate(req);
+async function editCommentOrReply(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -867,59 +866,85 @@ function editCommentOrReply(req, res) {
 
     let body = "";
     req.on("data", chunk => (body += chunk.toString()));
-    req.on("end", () => {
+    req.on("end", async () => {
         const { text } = JSON.parse(body);
         if (!text?.trim()) {
             res.writeHead(400, { "Content-Type": "application/json" });
             return res.end(JSON.stringify({ message: "Text cannot be empty." }));
         }
 
-        const data = JSON.parse(fs.readFileSync(file, "utf8"));
-        const article = data.find(a => a.id === articleId);
-        if (!article) return res.writeHead(404).end(JSON.stringify({ message: "Article not found" }));
+        try {
+            const articleResult = await pool.query(
+                `SELECT * FROM articles WHERE id = $1`,
+                [articleId]
+            );
+            const article = articleResult.rows[0];
 
-        const comment = article.comments.find(c => c.id === commentId);
-
-        if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
-
-
-        if (isReply) {
-            const reply = comment.replies.find(r => r.id === replyId);
-
-            if (!reply) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
-
-
-            if (reply.user !== user.username) {
-                res.writeHead(403, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ message: "You are not allowed to edit this reply" }));
+            if (!article) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Article not found" }));
             }
 
-            reply.text = text;
+            const comments = article.comments || [];
+            const commentIndex = comments.findIndex(c => c.id === commentId);
 
-            reply.updatedAt = new Date().toISOString();
-
-            fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-            res.writeHead(200, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Reply updated!", reply }));
-
-
-        }
-
-        else {
-            if (comment.user !== user.username) {
-                res.writeHead(403, { "Content-Type": "application/json" });
-                return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
+            if (commentIndex === -1) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Comment not found" }));
             }
 
-            comment.text = text;
-            comment.updatedAt = new Date().toISOString();
-            fs.writeFileSync(file, JSON.stringify(data, null, 2));
-            res.writeHead(200, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Comment updated!", comment }));
+            if (isReply) {
+                const replies = comments[commentIndex].replies || [];
+                const replyIndex = replies.findIndex(r => r.id === replyId);
+
+                if (replyIndex === -1) {
+                    res.writeHead(404, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ message: "Reply not found" }));
+                }
+
+                // STRICT PRIVATE for replies
+                if (replyIndex !== -1 && article.author !== user.username) {
+                    res.writeHead(403, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ message: "You are not allowed to edit this reply" }));
+                }
+
+                replies[replyIndex].text = text;
+                replies[replyIndex].updatedAt = new Date().toISOString();
+                comments[commentIndex].replies = replies;
+
+                await pool.query(
+                    `UPDATE articles SET comments = $1 WHERE id = $2`,
+                    [JSON.stringify(comments), articleId]
+                );
+
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Reply updated!", reply: replies[replyIndex] }));
+            } else {
+                // STRICT PRIVATE for comment
+                if (article.author !== user.username) {
+                    res.writeHead(403, { "Content-Type": "application/json" });
+                    return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
+                }
+
+                comments[commentIndex].text = text;
+                comments[commentIndex].updatedAt = new Date().toISOString();
+
+                await pool.query(
+                    `UPDATE articles SET comments = $1 WHERE id = $2`,
+                    [JSON.stringify(comments), articleId]
+                );
+
+                res.writeHead(200, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Comment updated!", comment: comments[commentIndex] }));
+            }
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Server error" }));
         }
     });
 }
+
 
 //  Delete a comment or reply
 function deleteCommentOrReply(req, res) {
