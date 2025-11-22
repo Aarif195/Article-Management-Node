@@ -365,7 +365,7 @@ async function deleteArticle(req, res) {
         // Delete the article
         const deleted = await pool.query("DELETE FROM articles WHERE id = $1 RETURNING *", [id]);
 
-        res.writeHead(204, { "Content-Type": "application/json" });
+        res.writeHead(204);
         res.end(JSON.stringify({ message: "Article deleted", deleted: deleted.rows[0] }));
     } catch (err) {
         res.writeHead(500, { "Content-Type": "application/json" });
@@ -947,9 +947,8 @@ async function editCommentOrReply(req, res) {
 
 
 //  Delete a comment or reply
-function deleteCommentOrReply(req, res) {
-
-    const user = authController.authenticate(req);
+async function deleteCommentOrReply(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -961,48 +960,62 @@ function deleteCommentOrReply(req, res) {
     const isReply = urlParts.includes("replies");
     const replyId = isReply ? parseInt(urlParts[7]) : null;
 
-    const data = JSON.parse(fs.readFileSync(file, "utf8"));
-    const article = data.find(a => a.id === articleId);
-    if (!article) return res.writeHead(404).end(JSON.stringify({ message: "Article not found" }));
+    try {
+        const articleResult = await pool.query(
+            `SELECT * FROM articles WHERE id = $1`,
+            [articleId]
+        );
+        const article = articleResult.rows[0];
 
-    const comment = article.comments.find(c => c.id === commentId);
-    if (!comment) return res.writeHead(404).end(JSON.stringify({ message: "Comment not found" }));
-
-    if (isReply) {
-        const replyIndex = comment.replies.findIndex(r => r.id === replyId);
-
-        if (replyIndex === -1) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
-
-        const reply = comment.replies.find(r => r.id === replyId);
-        if (!reply) {
+        if (!article) {
             res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Reply not found" }));
+            return res.end(JSON.stringify({ message: "Article not found" }));
         }
 
-        if (reply.user !== user.username) {
+        // STRICT PRIVATE: only article owner can delete
+        if (article.author !== user.username) {
             res.writeHead(403, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "You are not allowed to delete this reply" }));
+            return res.end(JSON.stringify({ 
+                message: isReply ? "You are not allowed to delete this reply" : "You are not allowed to delete this comment" 
+            }));
         }
 
-        comment.replies.splice(replyIndex, 1);
-
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
-
-        res.writeHead(204, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Reply deleted!" }));
-    } else {
-        if (comment.user !== user.username) {
-            res.writeHead(403, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "You are not allowed to delete this comment" }));
+        const comments = article.comments || [];
+        const commentIndex = comments.findIndex(c => c.id === commentId);
+        if (commentIndex === -1) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Comment not found" }));
         }
 
-        const commentIndex = article.comments.findIndex(c => c.id === commentId);
-        article.comments.splice(commentIndex, 1);
-        fs.writeFileSync(file, JSON.stringify(data, null, 2));
-        res.writeHead(204, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Comment deleted!" }));
+        if (isReply) {
+            const replies = comments[commentIndex].replies || [];
+            const replyIndex = replies.findIndex(r => r.id === replyId);
+            if (replyIndex === -1) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Reply not found" }));
+            }
+
+            replies.splice(replyIndex, 1);
+            comments[commentIndex].replies = replies;
+        } else {
+            comments.splice(commentIndex, 1);
+        }
+
+        await pool.query(
+            `UPDATE articles SET comments = $1 WHERE id = $2`,
+            [JSON.stringify(comments), articleId]
+        );
+
+        // 204 No Content
+        res.writeHead(204);
+        return res.end();
+    } catch (err) {
+        console.error(err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Server error" }));
     }
 }
+
 
 //  Get articles created by the logged-in user
 async function getMyArticles(req, res) {
