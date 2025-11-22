@@ -336,36 +336,41 @@ async function updateArticle(req, res) {
     });
 }
 
-// delete
-function deleteArticle(req, res) {
-
-    const user = authController.authenticate(req);
+// DELTE ARTICLE
+async function deleteArticle(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
     const id = parseInt(req.url.split("/").pop());
-    const data = fs.readFileSync(file, "utf8");
-    let articles = JSON.parse(data);
 
-    const index = articles.findIndex((a) => a.id === id);
-    if (index === -1) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Article not found" }));
+    try {
+        // Check if the article exists
+        const { rows } = await pool.query("SELECT * FROM articles WHERE id = $1", [id]);
+        const article = rows[0];
+
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
+
+        // Verify author
+        if (article.author !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own articles" }));
+        }
+
+        // Delete the article
+        const deleted = await pool.query("DELETE FROM articles WHERE id = $1 RETURNING *", [id]);
+
+        res.writeHead(204, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ message: "Article deleted", deleted: deleted.rows[0] }));
+    } catch (err) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+        res.end(JSON.stringify({ error: "Internal server error", details: err.message }));
     }
-
-
-    if (articles[index].author !== user.username) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Forbidden: You can only delete your own articles" }));
-    }
-
-    const deleted = articles.splice(index, 1);
-    fs.writeFileSync(file, JSON.stringify(articles, null, 2));
-
-    res.writeHead(204, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "Article deleted", deleted }));
 }
 
 // filtering
