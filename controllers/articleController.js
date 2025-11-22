@@ -436,54 +436,77 @@ function filterArticles(req, res) {
     });
 }
 
-
 // Like Article
-function likeArticle(req, res) {
+async function likeArticle(req, res) {
+    const user = await authController.authenticate(req);
 
-    const user = authController.authenticate(req);
+
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
     }
 
-    const id = parseInt(req.url.split("/")[3]);
-    const data = fs.readFileSync(file, "utf8");
-    const articles = JSON.parse(data);
+    const id = parseInt(req.url.split("/")[3], 10);
 
-    const index = articles.findIndex((a) => a.id === id);
-    if (index === -1) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Article not found" }));
+    try {
+        // fetch article row
+        const q = await pool.query("SELECT * FROM articles WHERE id = $1", [id]);
+        const article = q.rows[0];
+
+        if (!article) {
+            res.writeHead(404, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Article not found" }));
+        }
+
+        //  author checking
+        if (String(article.author) !== String(user.username)) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "You are not allowed to like this article" }));
+        }
+
+        // Determine current liked state:
+        const hasLikedColumn = Object.prototype.hasOwnProperty.call(article, "liked");
+        const currentLiked = hasLikedColumn ? Boolean(article.liked) : false;
+
+        // Toggle exactly as your JSON logic
+        let newLikes = Number(article.likes || 0);
+        let newLiked = currentLiked;
+        let message;
+
+        if (currentLiked) {
+            // currently liked -> unlike
+            newLikes = Math.max(newLikes - 1, 0);
+            newLiked = false;
+            message = "Article unliked!";
+        } else {
+            // currently not liked -> like
+            newLikes = newLikes + 1;
+            newLiked = true;
+            message = "Article liked!";
+        }
+
+        // Update DB: update likes always; update liked only if column exists.
+        let updated;
+        if (hasLikedColumn) {
+            updated = await pool.query(
+                "UPDATE articles SET likes = $1, liked = $2, updated_at = NOW() WHERE id = $3 RETURNING *",
+                [newLikes, newLiked, id]
+            );
+        } else {
+            updated = await pool.query(
+                "UPDATE articles SET likes = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+                [newLikes, id]
+            );
+        }
+        console.log({ tokenUser: user.username, articleAuthor: article.author, articleLikes: article.likes, articleLiked: article.liked });
+
+        res.writeHead(200, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message, article: updated.rows[0] }));
+    } catch (err) {
+        console.error("likeArticle error:", err);
+        res.writeHead(500, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ error: "Internal server error" }));
     }
-
-    // articles[index].likes += 1;
-
-    if (typeof articles[index].liked === "undefined") {
-        articles[index].liked = false;;
-    }
-
-    if (articles[index].author !== user.username) {
-        res.writeHead(403, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "You are not allowed to like this article" }));
-    }
-
-    // Toggle like
-    if (articles[index].liked) {
-        articles[index].likes = Math.max(articles[index].likes - 1, 0);
-        articles[index].liked = false;
-        message = "Article unliked!";
-    } else {
-        articles[index].likes += 1;
-        articles[index].liked = true;
-        message = "Article liked!";
-    }
-
-
-
-    fs.writeFileSync(file, JSON.stringify(articles, null, 2));
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: message, article: articles[index] }));
 }
 
 // post comment
