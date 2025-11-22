@@ -759,7 +759,7 @@ function editCommentOrReply(req, res) {
             if (!reply) return res.writeHead(404).end(JSON.stringify({ message: "Reply not found" }));
 
 
-            if (reply.user !== user.username) {
+            if (article.author !== user.username) {
                 res.writeHead(403, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ message: "You are not allowed to edit this reply" }));
             }
@@ -777,7 +777,7 @@ function editCommentOrReply(req, res) {
         }
 
         else {
-            if (comment.user !== user.username) {
+            if (article.author !== user.username) {
                 res.writeHead(403, { "Content-Type": "application/json" });
                 return res.end(JSON.stringify({ message: "You are not allowed to edit this comment" }));
             }
