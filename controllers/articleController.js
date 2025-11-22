@@ -230,11 +230,9 @@ async function getArticleById(req, res) {
     }
 }
 
-// update
-function updateArticle(req, res) {
-    // Authenticate user first
-    const user = authController.authenticate(req);
-    ;
+// update Article
+async function updateArticle(req, res) {
+    const user = await authController.authenticate(req);
     if (!user) {
         res.writeHead(401, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "Unauthorized" }));
@@ -243,40 +241,98 @@ function updateArticle(req, res) {
     const id = parseInt(req.url.split("/")[3]);
     let body = "";
 
-    req.on("data", (chunk) => {
-        body += chunk;
-    });
+    req.on("data", chunk => (body += chunk));
 
-    req.on("end", () => {
-        const updatedData = JSON.parse(body);
-
-        const data = fs.readFileSync(file, "utf8");
-        const articles = JSON.parse(data);
-
-        const index = articles.findIndex((article) => article.id === id);
-
-        if (index === -1) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Article not found" }));
+    req.on("end", async () => {
+        let updatedData;
+        try {
+            updatedData = JSON.parse(body);
+        } catch {
+            return sendError(res, "Invalid JSON data");
         }
 
-        // Check if the authenticated user is the author
-        if (articles[index].author !== user.username) {
-            res.writeHead(403, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Forbidden: You can only update your own articles" }));
+        // VALIDATION
+        if (updatedData.title !== undefined) {
+            if (!updatedData.title.trim()) return sendError(res, "Title cannot be empty.");
         }
 
-        const updatedArticle = {
-            ...articles[index],
-            ...updatedData,
-            updatedAt: new Date().toISOString()
-        };
-        articles[index] = updatedArticle;
+        if (updatedData.content !== undefined) {
+            if (!updatedData.content.trim()) return sendError(res, "Content cannot be empty.");
+        }
 
-        fs.writeFileSync(file, JSON.stringify(articles, null, 2));
+        if (updatedData.category !== undefined) {
+            if (!updatedData.category.trim()) return sendError(res, "Category cannot be empty.");
+            if (!allowedCategories.includes(updatedData.category)) {
+                return sendError(res, "Invalid category.");
+            }
+        }
 
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify(updatedArticle));
+        if (updatedData.status !== undefined) {
+            if (!updatedData.status.trim()) return sendError(res, "Status cannot be empty.");
+            if (!allowedStatuses.includes(updatedData.status)) {
+                return sendError(res, "Invalid status.");
+            }
+        }
+
+        if (updatedData.tags !== undefined) {
+            if (!Array.isArray(updatedData.tags) || updatedData.tags.length === 0) {
+                return sendError(res, "Tags must be a non-empty array.");
+            }
+            if (!updatedData.tags.every(t => allowedTags.includes(t))) {
+                return sendError(res, "Invalid tag(s).");
+            }
+        }
+
+        try {
+            // Check if article exists and belongs to user
+            const result = await pool.query(
+                "SELECT * FROM articles WHERE id = $1",
+                [id]
+            );
+
+            if (result.rows.length === 0) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Article not found" }));
+            }
+
+            const article = result.rows[0];
+
+            if (article.author !== user.username) {
+                res.writeHead(403, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Forbidden: You can only update your own articles" }));
+            }
+
+            const fields = [];
+            const values = [];
+            let i = 1;
+
+            for (const key in updatedData) {
+                fields.push(`${key} = $${i}`);
+                values.push(updatedData[key]);
+                i++;
+            }
+
+            values.push(id);
+            const updateSql = `
+                UPDATE articles
+                SET ${fields.join(", ")}, updated_at = NOW()
+                WHERE id = $${i}
+                RETURNING *
+            `;
+
+            const updated = await pool.query(updateSql, values);
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({
+                message: "Update successfully",
+                article: updated.rows[0]
+            }));
+
+        } catch (err) {
+            console.log(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ error: "Internal server error" }));
+        }
     });
 }
 
