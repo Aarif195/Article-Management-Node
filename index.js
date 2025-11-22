@@ -1,6 +1,5 @@
 const http = require('http');
-// const fs = require("fs");
-const PORT = process.env.PORT || 8000;
+const PORT = process.env.PORT || 8001;
 
 const { getArticles, createArticle, getArticleById, updateArticle, deleteArticle, filterArticles, likeArticle, postComment, getComments, replyComment, likeComment, likeReply, editCommentOrReply, deleteCommentOrReply, getMyArticles } = require('./controllers/articleController');
 
@@ -13,7 +12,6 @@ const server = http.createServer((req, res) => {
     if (req.url === "/api/register" && req.method === "POST") {
         return register(req, res);
     }
-
 
     // Login
     else if (req.url === "/api/login" && req.method === "POST") {

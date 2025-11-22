@@ -1,90 +1,139 @@
-const fs = require("fs");
-const path = require("path");
+
+const bcrypt = require("bcrypt");
+const pool = require("../db"); //  PostgreSQL pool from db.js
 const crypto = require("crypto");
 
 
-const file = path.join(__dirname, "../users.json");
-
-function readUsers() {
-    if (!fs.existsSync(file)) fs.writeFileSync(file, "[]");
-    const data = fs.readFileSync(file, "utf8");
-    return JSON.parse(data);
-}
-
-function writeUsers(users) {
-    fs.writeFileSync(file, JSON.stringify(users, null, 2));
-}
-
-// Helper to hash password (simple, not real bcrypt)
-function hashPassword(password) {
-    return crypto.createHash("sha256").update(password).digest("hex");
-}
-
-// REGISTER USER
-function register(req, res) {
+// REGISTER 
+async function register(req, res) {
     let body = "";
     req.on("data", chunk => {
         body += chunk.toString();
     });
 
-    req.on("end", () => {
+    req.on("end", async () => {
+        try {
+            const { username, email, password } = JSON.parse(body);
 
-        const { username, email, password } = JSON.parse(body);
+            // Basic validation
+            if (!username || !email || !password) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "All fields are required" }));
+            }
 
-        //  Basic validation
-        if (!username || !email || !password) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "All fields are required" }));
+            // Email format validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Invalid email format" }));
+            }
+
+            // Password strength validation
+            const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+            if (!passwordRegex.test(password)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({
+                    message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
+                }));
+            }
+
+            // Unique email check
+            const emailCheck = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+            if (emailCheck.rows.length) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Email already exists" }));
+            }
+
+            // Unique username check
+            const usernameCheck = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+            if (usernameCheck.rows.length) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Username already exists" }));
+            }
+
+            // Hash password
+            const hashedPassword = await bcrypt.hash(password, 10);
+
+            // Insert new user
+            await pool.query(
+                "INSERT INTO users (username, email, password) VALUES ($1, $2, $3)",
+                [username, email, hashedPassword]
+            );
+
+            res.writeHead(201, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "User registered successfully" }));
+
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Server error" }));
         }
-
-        //  Email format validation
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Invalid email format" }));
-        }
-
-        //  Password strength validation
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
-
-        if (!passwordRegex.test(password)) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({
-                message: "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
-            }));
-        }
-
-        //  Unique email check
-        const users = readUsers();
-        const exists = users.find(u => u.email === email);
-        if (exists) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Email already exists" }));
-        }
-
-        //  Unique username check
-        if (users.find(u => u.username === username)) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Username already exists" }));
-        }
-
-        const newUser = {
-            id: users.length ? users[users.length - 1].id + 1 : 1,
-            username,
-            email,
-            password: hashPassword(password),
-        };
-
-        users.push(newUser);
-        writeUsers(users);
-
-        res.writeHead(201, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({ message: "User registered successfully" }));
     });
 }
 
+// LOGIN 
+async function login(req, res) {
+    let body = "";
+    req.on("data", chunk => {
+        body += chunk.toString();
+    });
 
-function authenticate(req) {
+    req.on("end", async () => {
+        try {
+            const { email, password } = JSON.parse(body);
+
+            // Validate required fields
+            if (!email || !password) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Email and password are required" }));
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                res.writeHead(400, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Invalid email format" }));
+            }
+
+            // Check if user exists
+            const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+            const user = result.rows[0];
+
+            if (!user) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Invalid credentials" }));
+            }
+
+            // Compare password
+            const isMatch = await bcrypt.compare(password, user.password);
+            if (!isMatch) {
+                res.writeHead(404, { "Content-Type": "application/json" });
+                return res.end(JSON.stringify({ message: "Invalid credentials" }));
+            }
+
+            // Generate a new token for current login
+            const token = crypto.randomBytes(24).toString("hex");
+
+            // Store token in the database (optional) or skip if you don't persist
+            await pool.query("UPDATE users SET token = $1, updated_at = NOW() WHERE id = $2", [token, user.id]);
+
+            res.writeHead(200, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({
+                message: "Login successful",
+                token,
+                user: { id: user.id, username: user.username, email: user.email }
+            }));
+
+        } catch (err) {
+            console.error(err);
+            res.writeHead(500, { "Content-Type": "application/json" });
+            res.end(JSON.stringify({ message: "Server error" }));
+        }
+    });
+}
+
+// AUTHENTICATION
+async function authenticate(req) {
     const authHeader = req.headers["authorization"];
     if (!authHeader) return null;
 
@@ -93,99 +142,20 @@ function authenticate(req) {
 
     const token = parts[1];
 
-    // Load users
-    const users = JSON.parse(fs.readFileSync(file, "utf8"));
-    const user = users.find(u => u.token === token);
-
-    return user || null;
-}
-
-
-// LOGIN USER
-function login(req, res) {
-    let body = "";
-    req.on("data", chunk => {
-        body += chunk.toString();
-    });
-
-    req.on("end", () => {
-
-        const { email, password } = JSON.parse(body);
-
-        // Validate required fields
-        if (!email || !password) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Email and password are required" }));
-        }
-
-        //  Validate email format
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(email)) {
-            res.writeHead(400, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Invalid email format" }));
-        }
-
-        const users = readUsers();
-
-        // Check if user exists
-        const user = users.find(
-            u => u.email === email && u.password === hashPassword(password)
+    try {
+        const result = await pool.query(
+            "SELECT * FROM users WHERE token = $1",
+            [token]
         );
-
-        if (!user) {
-            res.writeHead(404, { "Content-Type": "application/json" });
-            return res.end(JSON.stringify({ message: "Invalid credentials" }));
-        }
-
-        // Generate a new token for current login
-        const token = crypto.randomBytes(24).toString("hex");
-
-        // Overwrite all other users' tokens
-        users.forEach(u => {
-            u.token = u.id === user.id ? token : null;
-        });
-
-        // Save users back to file
-        writeUsers(users);
-
-        res.writeHead(200, { "Content-Type": "application/json" });
-        res.end(JSON.stringify({
-            message: "Login successful",
-            token,
-            user: { id: user.id, username: user.username, email: user.email }
-        }));
-    });
+        const user = result.rows[0];
+        return user || null;
+    } catch (err) {
+        console.error("Authentication error:", err);
+        return null;
+    }
 }
 
 
-// DELETE USER
-// DELETE USER (private, token only)
-function deleteUser(req, res) {
-    // Authenticate user from token
-    const user = authenticate(req);
-    if (!user) {
-        res.writeHead(401, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "Unauthorized" }));
-    }
-
-    const users = readUsers();
-    const index = users.findIndex(u => u.id === user.id);
-
-    if (index === -1) {
-        res.writeHead(404, { "Content-Type": "application/json" });
-        return res.end(JSON.stringify({ message: "User not found" }));
-    }
-
-    const deletedUser = users.splice(index, 1);
-    writeUsers(users);
-
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify({ message: "User deleted successfully", deletedUser:{
-        username: user.username, email: user.email
-    } }));
-}
 
 
-// Test@1234
-
-module.exports = { register, login, deleteUser, authenticate };
+module.exports = { register, login, authenticate };

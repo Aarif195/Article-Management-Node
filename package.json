@@ -25,6 +25,9 @@
   "license": "ISC",
   "description": "A simple blog API built with Node.js core modules (without Express or any database). Supports CRUD operations, filtering, likes, and comments using JSON file storage.",
   "dependencies": {
-    "formidable": "^3.5.4"
+    "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.3",
+    "formidable": "^3.5.4",
+    "pg": "^8.16.3"
   }
 }
