@@ -523,6 +523,12 @@ function getComments(req, res) {
         return res.end(JSON.stringify({ message: "Article not found" }));
     }
 
+    //  Add strict PRIVATE check here
+    if (article.author !== user.username) {
+        res.writeHead(403, { "Content-Type": "application/json" });
+        return res.end(JSON.stringify({ message: "Forbidden: Only the article owner can view comments" }));
+    }
+    
     res.writeHead(200, { "Content-Type": "application/json" });
     res.end(JSON.stringify(article.comments));
 }
@@ -562,6 +568,12 @@ function replyComment(req, res) {
             return res.end(JSON.stringify({ message: "Article not found" }));
         }
 
+        //  Add strict PRIVATE check here
+        if (article.author !== user.username) {
+            res.writeHead(403, { "Content-Type": "application/json" });
+            return res.end(JSON.stringify({ message: "Forbidden: Only the article owner can perform this action" }));
+            }
+        
         const comment = article.comments.find(c => c.id === commentId);
 
         if (!comment) {
@@ -623,7 +635,7 @@ function likeComment(req, res) {
     // Initialize liked if not present
     if (typeof comment.liked === "undefined") comment.liked = false;
 
-    if (comment.user !== user.username) {
+    if (article.author !== user.username) {
         res.writeHead(403, { "Content-Type": "application/json" });
         return res.end(JSON.stringify({ message: "You are not allowed to like to this comment" }));
     }
